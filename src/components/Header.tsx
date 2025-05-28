@@ -1,0 +1,472 @@
+import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { Link } from 'react-router-dom';
+import standoffbookLogo from '../assets/standoffbook-logo.png';
+import LanguageSwitcher from './LanguageSwitcher';
+import LoginModal from './LoginModal';
+import { useAuth } from '../contexts/AuthContext';
+import defaultAvatar from '../assets/default-avatar.jpg';
+
+// Icons for navigation
+const ItemsIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+  </svg>
+);
+
+const NewsIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
+  </svg>
+);
+
+const ForumIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z" />
+  </svg>
+);
+
+const SearchIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+  </svg>
+);
+
+const ChevronDownIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+  </svg>
+);
+
+// User icon component
+const UserIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+  </svg>
+);
+
+// Category-specific icons
+const KnivesIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.121 14.121L19 19m-7-7l7-7m-7 7l-2.879 2.879M12 12L9.121 9.121m0 5.758a3 3 0 10-4.243-4.243 3 3 0 004.243 4.243z" />
+  </svg>
+);
+
+const GlovesIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 11.5V14m0-2.5v-6a1.5 1.5 0 113 0m-3 6a1.5 1.5 0 00-3 0v2a7.5 7.5 0 0015 0v-5a1.5 1.5 0 00-3 0m-6-3V11m0-5.5v-1a1.5 1.5 0 013 0v1m0 0V11m0-5.5a1.5 1.5 0 013 0v3m0 0V11" />
+  </svg>
+);
+
+const WeaponsIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+  </svg>
+);
+
+const StickersIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+  </svg>
+);
+
+const KeychainsIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+  </svg>
+);
+
+const OtherIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z" />
+  </svg>
+);
+
+// Category data with icons
+const categories = [
+  {
+    id: 'knives',
+    name: 'Knives',
+    icon: <KnivesIcon />,
+    items: ['Karambit', 'Bayonet', 'Butterfly', 'Huntsman', 'Flip', 'Classic']
+  },
+  {
+    id: 'gloves',
+    name: 'Gloves',
+    icon: <GlovesIcon />,
+    items: ['Sport', 'Driver', 'Specialist', 'Moto', 'Snakebite', 'Wraps']
+  },
+  {
+    id: 'weapons',
+    name: 'Weapons',
+    icon: <WeaponsIcon />,
+    items: ['Pistols', 'Rifles', 'Snipers', 'SMGs', 'Shotguns', 'Machine Guns']
+  },
+  {
+    id: 'stickers',
+    name: 'Stickers',
+    icon: <StickersIcon />,
+    items: ['Rare', 'Team', 'Tournament', 'Player Signatures', 'Sticker Capsules']
+  },
+  {
+    id: 'keychains',
+    name: 'Keychains',
+    icon: <KeychainsIcon />,
+    items: ['Rare', 'Common', 'Exclusive', 'Team']
+  },
+  {
+    id: 'other',
+    name: 'Other',
+    icon: <OtherIcon />,
+    items: ['Patches', 'Music', 'Graffiti', 'Agents']
+  }
+];
+
+const Header: React.FC = () => {
+  const { t } = useTranslation();
+  const { currentUser, logout } = useAuth();
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+
+  const toggleMenu = () => {
+    setIsMenuOpen(!isMenuOpen);
+  };
+
+  const toggleSearch = () => {
+    setIsSearchOpen(!isSearchOpen);
+  };
+
+  const toggleDropdown = (categoryId: string) => {
+    if (activeDropdown === categoryId) {
+      setActiveDropdown(null);
+    } else {
+      setActiveDropdown(categoryId);
+    }
+  };
+
+  const handleLogin = () => {
+    setIsLoginModalOpen(true);
+  };
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
+  };
+
+  return (
+    <header className="bg-csm-bg-card border-b border-csm-border">
+      {/* Top navigation bar */}
+      <div className="py-2 border-b border-csm-border">
+        <div className="container mx-auto px-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-6">
+              <img src={standoffbookLogo} alt="standoffbook Logo" className="h-8 w-auto" />
+
+              {/* Desktop Navigation - Updated categories */}
+              <nav className="hidden md:flex space-x-6">
+                <Link to="/" className="navbar-link flex items-center space-x-2">
+                  <ItemsIcon />
+                  <span>{t('header.mobile.items')}</span>
+                </Link>
+                <Link to="/news" className="navbar-link flex items-center space-x-2">
+                  <NewsIcon />
+                  <span>{t('header.mobile.news')}</span>
+                </Link>
+                <Link to="/forum" className="navbar-link flex items-center space-x-2">
+                  <ForumIcon />
+                  <span>{t('header.mobile.forum')}</span>
+                </Link>
+              </nav>
+            </div>
+
+            <div className="flex items-center space-x-3">
+              {/* Desktop Search - updated design */}
+              <div className="hidden md:block">
+                <div className="relative">
+                  <input
+                    type="text"
+                    placeholder={t('header.search')}
+                    className="bg-[#0a0c0e] text-white py-2 pl-10 pr-4 rounded border border-[#2e3038] w-64 focus:outline-none focus:border-csm-blue-accent transition-colors"
+                  />
+                  <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#8a92a1]">
+                    <SearchIcon />
+                  </div>
+                </div>
+              </div>
+
+              {/* Language Switcher */}
+              <LanguageSwitcher />
+
+              {/* Mobile Search Button - updated style */}
+              <button
+                onClick={toggleSearch}
+                className="md:hidden text-[#8a92a1] hover:text-white p-2 transition-colors"
+                aria-label="Search"
+              >
+                <SearchIcon />
+              </button>
+
+              {/* Login/Profile Button */}
+              {currentUser ? (
+                <div className="relative group">
+                  <Link
+                    to="/profile"
+                    className="hidden md:block"
+                  >
+                    <div className="w-8 h-8 rounded-full overflow-hidden border border-csm-border hover:border-csm-blue-accent transition-colors">
+                      <img
+                        src={currentUser.avatar || defaultAvatar}
+                        alt={currentUser.displayName}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                  </Link>
+
+                  {/* Mobile Profile Link (in header, not menu) */}
+                  <Link
+                    to="/profile"
+                    className="md:hidden"
+                  >
+                    <div className="w-8 h-8 rounded-full overflow-hidden border border-csm-border">
+                      <img
+                        src={currentUser.avatar || defaultAvatar}
+                        alt={currentUser.displayName}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                  </Link>
+                </div>
+              ) : (
+                <button
+                  onClick={handleLogin}
+                  className="hidden md:block bg-csm-blue-accent hover:bg-csm-blue-hover text-white py-2 px-4 rounded-md transition-colors"
+                >
+                  {t('header.login')}
+                </button>
+              )}
+
+              {/* Mobile Menu Button */}
+              <button
+                onClick={toggleMenu}
+                className="md:hidden text-white p-2 focus:outline-none"
+                aria-label="Toggle menu"
+              >
+                {isMenuOpen ? (
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                ) : (
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                  </svg>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Desktop Categories Bar with "Item types" as a text link and others as dropdowns */}
+      <div className="hidden md:block py-1 border-b border-csm-border bg-csm-bg-card">
+        <div className="container mx-auto px-4">
+          <div className="flex items-center space-x-6 text-sm">
+            {/* "Item types" as a simple text link with green color */}
+            <a
+              href="/item-types"
+              className="py-2 text-green-400 hover:text-csm-blue-accent transition-colors"
+            >
+              Item types
+            </a>
+
+            {/* Other categories as dropdowns with icons */}
+            {categories.map((category) => (
+              <div key={category.id} className="relative">
+                <button
+                  className="flex items-center space-x-1 py-2 text-white hover:text-csm-blue-accent transition-colors"
+                  onClick={() => toggleDropdown(category.id)}
+                  aria-expanded={activeDropdown === category.id}
+                  aria-haspopup="true"
+                >
+                  <span className="mr-1">{category.icon}</span>
+                  <span>{category.name}</span>
+                  <ChevronDownIcon />
+                </button>
+
+                {/* Dropdown Menu */}
+                {activeDropdown === category.id && (
+                  <div className="absolute left-0 top-full mt-1 w-48 bg-csm-bg-card rounded-md shadow-lg overflow-hidden z-20">
+                    <div className="py-1">
+                      {category.items.map((item, index) => (
+                        <a
+                          key={index}
+                          href="#"
+                          className="block px-4 py-2 text-sm text-csm-text-secondary hover:bg-csm-bg-lighter hover:text-white"
+                        >
+                          {item}
+                        </a>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Mobile Menu */}
+      {isMenuOpen && (
+        <div className="md:hidden mt-2 pt-4 pb-6 px-4 bg-csm-bg-card">
+          <nav className="flex flex-col space-y-5">
+            {/* Mobile categories with icons */}
+            <Link to="/" className="flex items-center space-x-2 navbar-link">
+              <ItemsIcon />
+              <span>{t('header.mobile.items')}</span>
+            </Link>
+            <Link to="/news" className="flex items-center space-x-2 navbar-link">
+              <NewsIcon />
+              <span>{t('header.mobile.news')}</span>
+            </Link>
+            <Link to="/forum" className="flex items-center space-x-2 navbar-link">
+              <ForumIcon />
+              <span>{t('header.mobile.forum')}</span>
+            </Link>
+
+            {/* Mobile Categories with icons */}
+            <div className="pt-2 border-t border-csm-border">
+              <p className="text-csm-text-secondary text-xs mb-3">Categories</p>
+
+              {/* "Item types" as simple link */}
+              <a
+                href="/item-types"
+                className="block py-2 text-green-400 hover:text-csm-blue-accent"
+              >
+                Item types
+              </a>
+
+              {/* Other categories as accordions with icons */}
+              {categories.map((category) => (
+                <div key={category.id} className="mb-2">
+                  <button
+                    className="flex items-center justify-between w-full py-2 text-left text-white"
+                    onClick={() => toggleDropdown(category.id)}
+                    aria-expanded={activeDropdown === category.id}
+                  >
+                    <span className="flex items-center">
+                      <span className="mr-2">{category.icon}</span>
+                      <span>{category.name}</span>
+                    </span>
+                    <span className={`transform transition-transform ${activeDropdown === category.id ? 'rotate-180' : ''}`}>
+                      <ChevronDownIcon />
+                    </span>
+                  </button>
+
+                  {activeDropdown === category.id && (
+                    <div className="pl-4 pt-2 pb-1">
+                      {category.items.map((item, index) => (
+                        <a
+                          key={index}
+                          href="#"
+                          className="block py-2 text-sm text-csm-text-secondary hover:text-white"
+                        >
+                          {item}
+                        </a>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+
+            {/* Mobile Login/Logout Button */}
+            {currentUser ? (
+              <div className="pt-4 border-t border-csm-border">
+                <div className="flex items-center mb-4">
+                  <div className="w-10 h-10 rounded-full overflow-hidden bg-csm-bg-darker mr-3">
+                    <img
+                      src={currentUser.avatar || defaultAvatar}
+                      alt={currentUser.displayName}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <div>
+                    <div className="text-white font-medium">{currentUser.displayName}</div>
+                    <div className="text-csm-text-secondary text-sm">@{currentUser.username}</div>
+                  </div>
+                </div>
+                <div className="flex flex-col space-y-3">
+                  <Link to="/profile" className="text-white hover:text-csm-blue-accent transition-colors">
+                    Profile Settings
+                  </Link>
+                  <button
+                    onClick={handleLogout}
+                    className="text-red-500 hover:text-red-400 transition-colors text-left"
+                  >
+                    Sign Out
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <button
+                onClick={handleLogin}
+                className="bg-csm-blue-accent text-white py-2 px-4 rounded-md flex justify-center items-center mt-4"
+              >
+                {t('header.login')}
+              </button>
+            )}
+          </nav>
+        </div>
+      )}
+
+      {/* Mobile Search Modal */}
+      {isSearchOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-70 z-50 flex flex-col p-4">
+          <div className="relative bg-csm-bg-card rounded-xl p-4 w-full max-w-lg mx-auto mt-16">
+            <button
+              onClick={toggleSearch}
+              className="absolute top-3 right-3"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+
+            <h3 className="text-white text-lg mb-4">{t('header.search')}</h3>
+            <div className="relative">
+              <input
+                type="text"
+                placeholder={t('header.search_items')}
+                className="bg-[#0a0c0e] text-white py-3 pl-10 pr-4 rounded border border-[#2e3038] w-full focus:outline-none focus:border-csm-blue-accent transition-colors"
+                autoFocus
+              />
+              <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#8a92a1]">
+                <SearchIcon />
+              </div>
+            </div>
+
+            <div className="mt-4">
+              <p className="text-csm-text-secondary text-sm">{t('header.popular_searches')}</p>
+              <div className="flex flex-wrap gap-2 mt-2">
+                <button className="bg-[#0a0c0e] border border-[#2e3038] rounded px-3 py-1 text-sm text-[#8a92a1] hover:text-white hover:border-[#4e84ff] transition-colors">AK-47</button>
+                <button className="bg-[#0a0c0e] border border-[#2e3038] rounded px-3 py-1 text-sm text-[#8a92a1] hover:text-white hover:border-[#4e84ff] transition-colors">AWP</button>
+                <button className="bg-[#0a0c0e] border border-[#2e3038] rounded px-3 py-1 text-sm text-[#8a92a1] hover:text-white hover:border-[#4e84ff] transition-colors">USP-S</button>
+                <button className="bg-[#0a0c0e] border border-[#2e3038] rounded px-3 py-1 text-sm text-[#8a92a1] hover:text-white hover:border-[#4e84ff] transition-colors">Knife</button>
+                <button className="bg-[#0a0c0e] border border-[#2e3038] rounded px-3 py-1 text-sm text-[#8a92a1] hover:text-white hover:border-[#4e84ff] transition-colors">Gloves</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Login Modal */}
+      <LoginModal isOpen={isLoginModalOpen} onClose={() => setIsLoginModalOpen(false)} />
+    </header>
+  );
+};
+
+export default Header;

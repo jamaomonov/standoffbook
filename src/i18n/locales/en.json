@@ -1,0 +1,106 @@
+{
+  "header": {
+    "main": "Main",
+    "equipment": "Equipment",
+    "weapons": "Weapons",
+    "rarity": "Rarity",
+    "knives": "Knives",
+    "pistols": "Pistols",
+    "skins": "Skins",
+    "cases": "Cases",
+    "other": "Other",
+    "login": "Log in",
+    "search": "Search",
+    "search_items": "Search items...",
+    "popular_searches": "Popular searches",
+    "mobile": {
+      "items": "Items",
+      "news": "News",
+      "forum": "Forum"
+    }
+  },
+  "itemDetails": {
+    "industrial_grade": "Industrial Grade",
+    "fan_favorite": "A fan favorite from Counter-Strike Source, the Silenced USP Pistol has a detachable silencer that gives shots less recoil and noise.",
+    "community_rating": "Community rating",
+    "votes": "Votes",
+    "from_last_week": "From last week",
+    "from_last_month": "From last month",
+    "view_in_game": "View in-game",
+    "check_float": "Check float",
+    "add_to_favorites": "Add to favorites"
+  },
+  "priceHistory": {
+    "title": "Price history",
+    "chart_placeholder": "Price chart will be displayed here"
+  },
+  "characteristics": {
+    "title": "Characteristics",
+    "team": "Team",
+    "magazine_capacity": "Magazine Capacity",
+    "rate_of_fire": "Rate of Fire",
+    "movement_speed": "Movement speed",
+    "kill_reward": "Kill Reward",
+    "price": "Price"
+  },
+  "damage": {
+    "title": "Damage",
+    "head": "Head",
+    "chest_arm": "Chest / Arm",
+    "stomach": "Stomach",
+    "legs": "Legs"
+  },
+  "shootingPattern": {
+    "title": "Shooting pattern",
+    "spray": "Spray",
+    "recoil_control": "Recoil control"
+  },
+  "gallery": {
+    "title": "Gallery"
+  },
+  "similarSkins": {
+    "title": "Similar skins",
+    "factory_new": "Factory New",
+    "view": "View",
+    "show_all": "Show all"
+  },
+  "description": {
+    "title": "Description",
+    "overview": {
+      "title": "Overview",
+      "content": "The USP-S (Universelle Selbstladepistole-Schalldämpfer, German for \"Universal Self-loading Pistol Silencer\") is a silenced CT-exclusive pistol that was added in the update that ported Counter-Strike: Global Offensive to the Source 2 engine."
+    },
+    "rarity": {
+      "title": "Rarity",
+      "content": "The Royal Blue is one of the older skin designs in the game, featuring a simple blue slide with a black grip and barrel. Its industrial grade rarity makes it affordable and accessible for most players."
+    },
+    "history": {
+      "title": "History",
+      "content": "This skin was introduced in the original Arms Deal update on August 14, 2013. It quickly became a favorite for players looking for a clean, simple design for their USP-S without breaking the bank."
+    },
+    "popularity": {
+      "title": "Popularity",
+      "content": "Despite its simple design, the USP-S Royal Blue maintains steady popularity due to its clean look and affordability. It's often chosen by players who prefer minimalist designs over flashier, more expensive alternatives."
+    }
+  },
+  "footer": {
+    "find_skins": "Find all your favorite CS2 skins and items. Track prices and market trends.",
+    "links": "Links",
+    "home": "Home",
+    "about_us": "About Us",
+    "contact": "Contact",
+    "terms": "Terms & Conditions",
+    "privacy": "Privacy Policy",
+    "categories": "Categories",
+    "weapons": "Weapons",
+    "knives": "Knives",
+    "gloves": "Gloves",
+    "cases": "Cases",
+    "collections": "Collections",
+    "newsletter": "Newsletter",
+    "subscribe": "Subscribe to our newsletter for the latest updates on skins, prices, and market trends.",
+    "your_email": "Your email",
+    "subscribe_button": "Subscribe",
+    "rights_reserved": "All rights reserved."
+  }
+}

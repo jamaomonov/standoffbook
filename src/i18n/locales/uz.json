@@ -1,0 +1,99 @@
+{
+  "header": {
+    "main": "Asosiy",
+    "equipment": "Jihozlar",
+    "weapons": "Qurollar",
+    "rarity": "Kamyoblik",
+    "knives": "Pichoqlar",
+    "pistols": "Pistoletlar",
+    "skins": "Skinlar",
+    "cases": "Qutichalar",
+    "other": "Boshqa",
+    "search": "Qidirish...",
+    "login": "Kirish"
+  },
+  "itemDetails": {
+    "industrial_grade": "Sanoat darajasi",
+    "fan_favorite": "Counter-Strike Source'dagi sevimli qurol, so'ndiruvchili USP pistoletining olinadigan so'ndiruvchisi bor, bu otishda kam qaytish va shovqin beradi.",
+    "community_rating": "Hamjamiyat reytingi:",
+    "votes": "Ovozlar",
+    "from_last_week": "O'tgan haftadan:",
+    "from_last_month": "O'tgan oydan:",
+    "view_in_game": "O'yinda ko'rish",
+    "check_float": "Float ni tekshirish",
+    "add_to_favorites": "Sevimlilarga qo'shish"
+  },
+  "priceHistory": {
+    "title": "Narx tarixi",
+    "chart_placeholder": "Narx jadvali shu yerda ko'rsatiladi"
+  },
+  "characteristics": {
+    "title": "Xususiyatlar:",
+    "team": "Jamoa",
+    "magazine_capacity": "O'qdon hajmi",
+    "rate_of_fire": "Otish tezligi",
+    "movement_speed": "Harakatlanish tezligi",
+    "kill_reward": "O'ldirish mukofoti",
+    "price": "Narxi"
+  },
+  "damage": {
+    "title": "Zarar:",
+    "head": "Bosh",
+    "chest_arm": "Ko'krak / Qo'l",
+    "stomach": "Qorin",
+    "legs": "Oyoqlar"
+  },
+  "shootingPattern": {
+    "title": "Otish naqshi:",
+    "spray": "Purkash",
+    "recoil_control": "Qaytish nazorati"
+  },
+  "gallery": {
+    "title": "Galeriya"
+  },
+  "similarSkins": {
+    "title": "O'xshash skinlar",
+    "factory_new": "Yangi chiqqan",
+    "view": "Ko'rish",
+    "show_all": "Hammasini ko'rsatish"
+  },
+  "description": {
+    "title": "Tavsif",
+    "overview": {
+      "title": "Umumiy ma'lumot",
+      "content": "USP-S | Royal Blue - monoxrom, qirol ko'ki mavzusida ishlab chiqilgan vizual jihatdan jozibali skin. U Dust 2 kolleksiyasiga tegishli va 2013 yil avgustda chiqarilgan."
+    },
+    "rarity": {
+      "title": "Kamyoblik",
+      "content": "USP-S | Royal Blue 'Sanoat darajasi' sifatida tasniflanib, o'rta kamyoblikdagi narsadir. Kamyoblikning o'rtacha tasnifiga qaramay, uning toza ko'k dizayni va yaltiroq pardozi uni o'yinchilar orasida mashhur qilgan."
+    },
+    "history": {
+      "title": "Tarix",
+      "content": "USP-S | Royal Blue CS:GO dagi eng chang bosgan xarita - Dust 2 bilan o'z tarixini bo'lishadi. U Arms Deal yangilanishida chiqarilgan bo'lib, o'yinda birinchi qurol skinlarining joriy etilishini belgilaydi."
+    },
+    "popularity": {
+      "title": "Mashhurlik",
+      "content": "Royal Blue ko'pincha minimalistik va nozik skinni afzal ko'ruvchi o'yinchilar tomonidan ishlatiladi. U shuningdek turli xil professional o'yinlarda ham ko'rinadi, shiddatli jangga nafislik qo'shadi."
+    }
+  },
+  "footer": {
+    "find_skins": "Barcha sevimli CS2 skinlari va narsalarini toping. Narxlar va bozor tendensiyalarini kuzating.",
+    "links": "Havolalar",
+    "home": "Bosh sahifa",
+    "about_us": "Biz haqimizda",
+    "contact": "Aloqa",
+    "terms": "Foydalanish shartlari",
+    "privacy": "Maxfiylik siyosati",
+    "categories": "Kategoriyalar",
+    "weapons": "Qurollar",
+    "knives": "Pichoqlar",
+    "gloves": "Qo'lqoplar",
+    "cases": "Qutichalar",
+    "collections": "Kolleksiyalar",
+    "newsletter": "Yangiliklar byulleteni",
+    "subscribe": "Skinlar, narxlar va bozor tendensiyalari haqidagi so'nggi yangiliklarni olish uchun bizning yangiliklar byulletenimizga obuna bo'ling.",
+    "your_email": "Sizning emailingiz",
+    "subscribe_button": "Obuna bo'lish",
+    "rights_reserved": "Barcha huquqlar himoyalangan. Bu klon loyiha va asl CSMarketCap.com veb-saytiga aloqador emas."
+  }
+}
