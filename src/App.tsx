@@ -17,7 +17,7 @@ function App() {
         <Router>
           <Routes>
             <Route path="/" element={<MainPage />} />
-            <Route path="/item/:id" element={<ItemDetailsPage />} />
+            <Route path="/item/:slug" element={<ItemDetailsPage />} />
             <Route path="/profile" element={<ProfilePage />} />
             <Route path="/categories/:categoryId" element={<CategoryPage />} />
             <Route path="/categories/:categoryId/:subcategoryId" element={<SubcategoryPage />} />

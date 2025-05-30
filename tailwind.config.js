@@ -12,28 +12,28 @@ module.exports = {
     },
     extend: {
       colors: {
-        // Custom colors based on the CS Market website
+        // Custom colors based on the CS Market website with improved contrast
         csm: {
           bg: {
-            dark: "#141820",
-            lighter: "#1e2430",
-            card: "#1a1f2a",
+            dark: "#0f1219", // Darker background for better contrast
+            lighter: "#1a2028", // Adjusted for better contrast
+            card: "#151b24", // Darker card background
           },
           text: {
-            primary: "#ffffff",
-            secondary: "#bdbdc0",
-            muted: "#656e76",
+            primary: "#ffffff", // Pure white for maximum contrast
+            secondary: "#e1e1e4", // Lighter secondary text for better readability
+            muted: "#9ca3af", // Lighter muted text for better visibility
           },
           blue: {
-            primary: "#2d2f6c",
-            royal: "#283696",
-            accent: "#4cc4c3",
+            primary: "#3b4199", // More vibrant blue
+            royal: "#4154d1", // Brighter royal blue
+            accent: "#50e6e5", // Brighter accent for better visibility
             hover: "#6d66c6",
           },
           red: {
-            accent: "#603233",
+            accent: "#dc2626", // Brighter red for better visibility
           },
-          border: "#242842",
+          border: "#242842", // Slightly more visible border
         },
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",

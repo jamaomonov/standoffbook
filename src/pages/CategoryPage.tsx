@@ -214,6 +214,7 @@ const CategoryPage: React.FC = () => {
   const [sortOrder, setSortOrder] = useState<'price-asc' | 'price-desc' | 'newest'>('newest');
   const [currentPage, setCurrentPage] = useState<number>(1);
   const itemsPerPage = 12;
+  const [isFiltersVisible, setIsFiltersVisible] = useState<boolean>(false);
 
   // Get category data based on categoryId
   const category = categoryData[categoryId as keyof typeof categoryData];
@@ -282,75 +283,117 @@ const CategoryPage: React.FC = () => {
         </div>
 
         <div className="flex flex-col lg:flex-row gap-4">
-          {/* Subcategories Sidebar */}
-          <div className="lg:w-1/4">
-            <div className="bg-csm-bg-card border border-csm-border rounded-xl p-4 mb-4">
-              <h2 className="text-white font-semibold mb-3">Subcategories</h2>
-              <div className="space-y-2">
-                <button
-                  onClick={() => setActiveSubcategory(null)}
-                  className={`w-full text-left px-3 py-2 rounded-md flex items-center ${!activeSubcategory ? 'bg-csm-blue-primary text-white' : 'text-csm-text-secondary hover:bg-csm-bg-darker'}`}
-                >
-                  <SubcategoryIcon />
-                  <span className="ml-2">All {category.name}</span>
-                </button>
-                {category.subcategories.map((subcategory) => (
+          {/* Mobile Filters Toggle Button */}
+          <button
+            onClick={() => setIsFiltersVisible(!isFiltersVisible)}
+            className="lg:hidden w-full flex items-center justify-between bg-csm-bg-card border border-csm-border rounded-xl p-4 text-white"
+          >
+            <span className="flex items-center">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+              </svg>
+              Filters
+            </span>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className={`h-5 w-5 transform transition-transform duration-300 ${isFiltersVisible ? 'rotate-180' : ''}`}
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+
+          {/* Filters Panel */}
+          <div 
+            className={`
+              lg:w-1/4 
+              lg:relative 
+              bg-csm-bg-darker lg:bg-transparent
+              transition-all duration-300 ease-in-out
+              ${isFiltersVisible ? 'max-h-[2000px] opacity-100' : 'max-h-0 opacity-0 lg:max-h-none lg:opacity-100'}
+              overflow-hidden lg:overflow-visible
+              lg:p-0
+            `}
+          >
+            {/* Filter Content */}
+            <div className="space-y-4 p-4 lg:p-0">
+              {/* Subcategories */}
+              <div className="bg-csm-bg-card border border-csm-border rounded-xl p-4">
+                <h2 className="text-white font-semibold mb-3">Subcategories</h2>
+                <div className="space-y-2">
                   <button
-                    key={subcategory.id}
-                    onClick={() => setActiveSubcategory(subcategory.id)}
-                    className={`w-full text-left px-3 py-2 rounded-md flex items-center ${activeSubcategory === subcategory.id ? 'bg-csm-blue-primary text-white' : 'text-csm-text-secondary hover:bg-csm-bg-darker'}`}
+                    onClick={() => setActiveSubcategory(null)}
+                    className={`w-full text-left px-3 py-2 rounded-md flex items-center ${!activeSubcategory ? 'bg-csm-blue-primary text-white' : 'text-csm-text-secondary hover:bg-csm-bg-darker'}`}
                   >
                     <SubcategoryIcon />
-                    <span className="ml-2">{subcategory.name}</span>
-                    <span className="ml-auto text-xs opacity-70">{subcategory.items}</span>
+                    <span className="ml-2">All {category.name}</span>
                   </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Filters */}
-            <div className="bg-csm-bg-card border border-csm-border rounded-xl p-4">
-              <h2 className="text-white font-semibold mb-3">Filters</h2>
-
-              {/* Price Range */}
-              <div className="mb-4">
-                <h3 className="text-csm-text-secondary text-sm mb-2">Price Range</h3>
-                <div className="flex items-center space-x-2">
-                  <input
-                    type="text"
-                    placeholder="Min"
-                    className="bg-csm-bg-darker text-white py-1 px-2 rounded w-full focus:outline-none focus:ring-1 focus:ring-csm-blue-accent"
-                  />
-                  <span className="text-csm-text-secondary">-</span>
-                  <input
-                    type="text"
-                    placeholder="Max"
-                    className="bg-csm-bg-darker text-white py-1 px-2 rounded w-full focus:outline-none focus:ring-1 focus:ring-csm-blue-accent"
-                  />
+                  {category.subcategories.map((subcategory) => (
+                    <button
+                      key={subcategory.id}
+                      onClick={() => setActiveSubcategory(subcategory.id)}
+                      className={`w-full text-left px-3 py-2 rounded-md flex items-center ${activeSubcategory === subcategory.id ? 'bg-csm-blue-primary text-white' : 'text-csm-text-secondary hover:bg-csm-bg-darker'}`}
+                    >
+                      <SubcategoryIcon />
+                      <span className="ml-2">{subcategory.name}</span>
+                      <span className="ml-auto text-xs opacity-70">{subcategory.items}</span>
+                    </button>
+                  ))}
                 </div>
               </div>
 
-              {/* Wear/Condition */}
-              <div className="mb-4">
-                <h3 className="text-csm-text-secondary text-sm mb-2">Condition</h3>
-                <div className="space-y-1">
+              {/* Price Range */}
+              <div className="bg-csm-bg-card border border-csm-border rounded-xl p-4">
+                <h2 className="text-white font-semibold mb-3">Price Range</h2>
+                <div className="space-y-4">
+                  <div className="flex items-center space-x-2">
+                    <input
+                      type="text"
+                      placeholder="Min"
+                      className="bg-csm-bg-darker text-white py-2 px-3 rounded w-full focus:outline-none focus:ring-1 focus:ring-csm-blue-accent"
+                    />
+                    <span className="text-csm-text-secondary">-</span>
+                    <input
+                      type="text"
+                      placeholder="Max"
+                      className="bg-csm-bg-darker text-white py-2 px-3 rounded w-full focus:outline-none focus:ring-1 focus:ring-csm-blue-accent"
+                    />
+                  </div>
+                  <button className="w-full bg-csm-blue-primary text-white py-2 rounded-md hover:bg-csm-blue-hover transition-colors">
+                    Apply
+                  </button>
+                </div>
+              </div>
+
+              {/* Condition */}
+              <div className="bg-csm-bg-card border border-csm-border rounded-xl p-4">
+                <h2 className="text-white font-semibold mb-3">Condition</h2>
+                <div className="space-y-2">
                   {['Factory New', 'Minimal Wear', 'Field-Tested', 'Well-Worn', 'Battle-Scarred'].map(condition => (
-                    <label key={condition} className="flex items-center text-sm">
-                      <input type="checkbox" className="mr-2" />
-                      <span className="text-csm-text-secondary">{condition}</span>
+                    <label key={condition} className="flex items-center text-sm cursor-pointer group">
+                      <input type="checkbox" className="hidden" />
+                      <div className="w-4 h-4 border border-csm-border rounded mr-2 group-hover:border-csm-blue-accent flex items-center justify-center">
+                        <div className="w-2 h-2 bg-csm-blue-accent rounded-sm hidden group-hover:block"></div>
+                      </div>
+                      <span className="text-csm-text-secondary group-hover:text-white transition-colors">{condition}</span>
                     </label>
                   ))}
                 </div>
               </div>
 
               {/* Rarity */}
-              <div>
-                <h3 className="text-csm-text-secondary text-sm mb-2">Rarity</h3>
-                <div className="space-y-1">
-                  {['Consumer Grade', 'Industrial Grade', 'Mil-Spec', 'Restricted', 'Classified', 'Covert', 'Extraordinary'].map(rarity => (
-                    <label key={rarity} className="flex items-center text-sm">
-                      <input type="checkbox" className="mr-2" />
-                      <span className="text-csm-text-secondary">{rarity}</span>
+              <div className="bg-csm-bg-card border border-csm-border rounded-xl p-4">
+                <h2 className="text-white font-semibold mb-3">Rarity</h2>
+                <div className="space-y-2">
+                  {['Consumer Grade', 'Industrial Grade', 'Mil-Spec', 'Restricted', 'Classified', 'Covert'].map(rarity => (
+                    <label key={rarity} className="flex items-center text-sm cursor-pointer group">
+                      <input type="checkbox" className="hidden" />
+                      <div className="w-4 h-4 border border-csm-border rounded mr-2 group-hover:border-csm-blue-accent flex items-center justify-center">
+                        <div className="w-2 h-2 bg-csm-blue-accent rounded-sm hidden group-hover:block"></div>
+                      </div>
+                      <span className="text-csm-text-secondary group-hover:text-white transition-colors">{rarity}</span>
                     </label>
                   ))}
                 </div>
@@ -358,7 +401,7 @@ const CategoryPage: React.FC = () => {
             </div>
           </div>
 
-          {/* Items Grid */}
+          {/* Content Area */}
           <div className="lg:w-3/4">
             {/* Sorting Options */}
             <div className="flex justify-between items-center mb-4">
@@ -368,21 +411,24 @@ const CategoryPage: React.FC = () => {
                   : `All ${category.name}`}
               </h2>
 
-              <div className="flex items-center">
-                <span className="text-csm-text-secondary mr-2 hidden sm:inline">Sort by:</span>
-                <select
-                  value={sortOrder}
-                  onChange={(e) => setSortOrder(e.target.value as 'price-asc' | 'price-desc' | 'newest')}
-                  className="bg-csm-bg-darker text-white py-1 px-3 rounded border border-csm-border focus:outline-none focus:ring-1 focus:ring-csm-blue-accent"
-                >
-                  <option value="newest">Newest</option>
-                  <option value="price-asc">Price: Low to High</option>
-                  <option value="price-desc">Price: High to Low</option>
-                </select>
-              </div>
+              <select
+                value={sortOrder}
+                onChange={(e) => setSortOrder(e.target.value as typeof sortOrder)}
+                className="appearance-none bg-csm-bg-card text-white py-2.5 pl-4 pr-10 rounded-xl border border-csm-border hover:border-csm-blue-accent focus:outline-none focus:ring-1 focus:ring-csm-blue-accent cursor-pointer relative"
+                style={{
+                  backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236B7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`,
+                  backgroundRepeat: 'no-repeat',
+                  backgroundPosition: 'right 12px center',
+                  backgroundSize: '16px'
+                }}
+              >
+                <option value="newest" className="bg-csm-bg-card text-white">Newest</option>
+                <option value="price-asc" className="bg-csm-bg-card text-white">Price: Low to High</option>
+                <option value="price-desc" className="bg-csm-bg-card text-white">Price: High to Low</option>
+              </select>
             </div>
 
-            {/* Items Grid */}
+            {/* Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {paginatedItems.length > 0 ? (
                 paginatedItems.map(item => (

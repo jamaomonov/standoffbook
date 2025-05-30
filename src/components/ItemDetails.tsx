@@ -1,8 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useParams } from 'react-router-dom';
 import WeaponStats from './WeaponStats';
 import DamageStats from './DamageStats';
 import PriceHistoryChart from './PriceHistoryChart';
+import { getItemDetails, type ItemDetails } from '../api/item';
+import { API_URL } from '../api/config';
 import uspInGameView from '../assets/usp-ingame-view.webp';
 
 const StarIcon = () => (
@@ -11,11 +14,43 @@ const StarIcon = () => (
   </svg>
 );
 
+const ArrowUpIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 inline" viewBox="0 0 20 20" fill="currentColor">
+    <path fillRule="evenodd" d="M3.293 9.707a1 1 0 010-1.414l6-6a1 1 0 011.414 0l6 6a1 1 0 01-1.414 1.414L11 5.414V17a1 1 0 11-2 0V5.414L4.707 9.707a1 1 0 01-1.414 0z" clipRule="evenodd" />
+  </svg>
+);
+
+const ArrowDownIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 inline" viewBox="0 0 20 20" fill="currentColor">
+    <path fillRule="evenodd" d="M16.707 10.293a1 1 0 010 1.414l-6 6a1 1 0 01-1.414 0l-6-6a1 1 0 111.414-1.414L9 14.586V3a1 1 0 012 0v11.586l4.293-4.293a1 1 0 011.414 0z" clipRule="evenodd" />
+  </svg>
+);
+
+const PriceChange: React.FC<{ value: number | undefined; percentage: number | undefined }> = ({ value, percentage }) => {
+  if (value === undefined || percentage === undefined) return null;
+  
+  const isPositive = value >= 0;
+  const colorClass = isPositive ? 'text-green-500' : 'text-red-500';
+  const Icon = isPositive ? ArrowUpIcon : ArrowDownIcon;
+  const prefix = isPositive ? '+' : '';
+
+  return (
+    <div className={colorClass}>
+      <Icon /> {prefix}{value} G ({prefix}{percentage}%)
+    </div>
+  );
+};
+
 const ItemDetails: React.FC = () => {
   const { t } = useTranslation();
-
-  // Add state for the price chart time range
+  const { slug } = useParams<{ slug: string }>();
+  
+  // Все состояния объявляем в начале компонента
+  const [itemDetails, setItemDetails] = useState<ItemDetails | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [selectedTimeRange, setSelectedTimeRange] = useState<'7D' | '1M' | '3M' | '6M' | '1Y' | 'All'>('7D');
+  const [selectedImage, setSelectedImage] = useState<{src: string, alt: string} | null>(null);
 
   // Gallery images - all using the same in-game view image
   const galleryImages = [
@@ -41,20 +76,43 @@ const ItemDetails: React.FC = () => {
     }
   ];
 
-  // State for fullscreen image modal
-  const [selectedImage, setSelectedImage] = useState<{src: string, alt: string} | null>(null);
 
-  // Handle image click for fullscreen view
-  const openFullscreen = (image: {src: string, alt: string}) => {
+  // Функции-обработчики
+  const openFullscreen = useCallback((image: {src: string, alt: string}) => {
     setSelectedImage(image);
-  };
+  }, []);
 
-  // Close fullscreen modal
-  const closeFullscreen = () => {
+  const closeFullscreen = useCallback(() => {
     setSelectedImage(null);
-  };
+  }, []);
 
-  // Add/remove modal-open class to body when modal opens/closes
+  // Эффект для загрузки данных
+  useEffect(() => {
+    const fetchItemDetails = async () => {
+      if (!slug) {
+        console.log('No slug provided');
+        return;
+      }
+      
+      console.log('Fetching details for slug:', slug);
+      try {
+        setIsLoading(true);
+        const data = await getItemDetails(slug);
+        console.log('Received data:', JSON.stringify(data, null, 2));
+        setItemDetails(data);
+        setError(null);
+      } catch (err) {
+        console.error('Error fetching item details:', err);
+        setError('Failed to load item details');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchItemDetails();
+  }, [slug]);
+
+  // Эффект для модального окна
   useEffect(() => {
     if (selectedImage) {
       document.body.classList.add('modal-open');
@@ -62,13 +120,12 @@ const ItemDetails: React.FC = () => {
       document.body.classList.remove('modal-open');
     }
 
-    // Cleanup function to ensure class is removed when component unmounts
     return () => {
       document.body.classList.remove('modal-open');
     };
   }, [selectedImage]);
 
-  // Handle escape key to close modal
+  // Эффект для клавиши Escape
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && selectedImage) {
@@ -78,7 +135,15 @@ const ItemDetails: React.FC = () => {
 
     window.addEventListener('keydown', handleEscape);
     return () => window.removeEventListener('keydown', handleEscape);
-  }, [selectedImage]);
+  }, [selectedImage, closeFullscreen]);
+
+  if (isLoading) {
+    return <div className="container mx-auto py-8 text-white">Loading...</div>;
+  }
+
+  if (error || !itemDetails || !itemDetails.category || !itemDetails.type || !itemDetails.rarity || !itemDetails.collection || !itemDetails.weapon) {
+    return <div className="container mx-auto py-8 text-red-500">{error || 'Failed to load item details'}</div>;
+  }
 
   return (
     <div className="py-6 px-3 md:py-8 md:px-0">
@@ -87,18 +152,18 @@ const ItemDetails: React.FC = () => {
         <div className="flex items-center mb-4 md:mb-6 text-sm overflow-x-auto whitespace-nowrap">
           <a href="/" className="text-csm-text-secondary hover:text-white">{t('header.main')}</a>
           <span className="mx-2 text-csm-text-secondary">/</span>
-          <a href="/weapons/usp-s" className="text-csm-text-secondary hover:text-white">USP-S</a>
+          <a href={`/${itemDetails.type.name.toLowerCase()}`} className="text-csm-text-secondary hover:text-white">{itemDetails.type.name}</a>
           <span className="mx-2 text-csm-text-secondary">/</span>
-          <a href="/item/usp-s-royal-blue" className="text-csm-text-secondary hover:text-white">USP-S | Royal Blue</a>
+          <span className="text-csm-text-secondary">{itemDetails.name}</span>
         </div>
 
         {/* Item Header */}
         <div className="flex flex-col md:flex-row gap-6 md:gap-8 mb-6 md:mb-8">
-          {/* Item Image - Without Background */}
+          {/* Item Image */}
           <div className="w-full md:w-1/2 lg:w-2/5 flex items-center justify-center item-image-container">
             <img
-              src="/src/assets/usp-royal-blue-transparent.png"
-              alt="USP-S Royal Blue (Field-Tested)"
+              src={API_URL + itemDetails.photo}
+              alt={itemDetails.name}
               className="max-w-full h-auto max-h-52 md:max-h-64"
             />
           </div>
@@ -108,13 +173,19 @@ const ItemDetails: React.FC = () => {
             <div className="bg-csm-bg-card rounded-xl p-4 md:p-6 h-full">
               <div className="flex flex-col h-full">
                 <div className="mb-4">
-                  <span className="inline-block px-3 py-1 bg-csm-blue-primary text-white text-xs rounded-full mb-2">
-                    {t('itemDetails.industrial_grade')}
+                  <span className="inline-block px-3 py-1 bg-csm-blue-primary text-white text-xs rounded-full mb-2 mr-2">
+                    {itemDetails.category.name}
                   </span>
-                  <h1 className="text-xl md:text-2xl lg:text-3xl font-bold text-white">USP-S | Royal Blue (Field-Tested)</h1>
-                  <p className="text-csm-text-secondary mt-2 text-sm md:text-base">
-                    {t('itemDetails.fan_favorite')}
-                  </p>
+                  <span className="inline-block px-3 py-1 bg-csm-blue-primary text-white text-xs rounded-full mb-2 mr-2">
+                    {itemDetails.rarity.name}
+                  </span>
+                  <span className="inline-block px-3 py-1 bg-csm-blue-primary text-white text-xs rounded-full mb-2 mr-2">
+                    {itemDetails.type.name}
+                  </span>
+                  <span className="inline-block px-3 py-1 bg-csm-blue-primary text-white text-xs rounded-full mb-2 mr-2">
+                    {itemDetails.collection.name}
+                  </span>
+                  <h1 className="text-xl md:text-2xl lg:text-3xl font-bold text-white">{itemDetails.name}</h1>
                 </div>
 
                 <div className="grid grid-cols-2 gap-3 md:gap-4 mb-4">
@@ -131,14 +202,42 @@ const ItemDetails: React.FC = () => {
                   </div>
 
                   <div>
+                    <h3 className="text-csm-text-muted text-xs md:text-sm">Current Price</h3>
+                    <div className="text-yellow-300">{itemDetails.prices?.price_now} G</div>
+                  </div>
+
+                  <div>
+                    <h3 className="text-csm-text-muted text-xs md:text-sm">Day</h3>
+                    <PriceChange 
+                      value={itemDetails.prices?.per_day_gold} 
+                      percentage={itemDetails.prices?.per_day_percent} 
+                    />
+                  </div>
+
+                  <div>
                     <h3 className="text-csm-text-muted text-xs md:text-sm">{t('itemDetails.from_last_week')}</h3>
-                    <div className="text-red-500">- 8.70 (-34.83%)</div>
+                    <PriceChange 
+                      value={itemDetails.prices?.per_week_gold} 
+                      percentage={itemDetails.prices?.per_week_percent}
+                    />
                   </div>
 
                   <div>
                     <h3 className="text-csm-text-muted text-xs md:text-sm">{t('itemDetails.from_last_month')}</h3>
-                    <div className="text-red-500">- 3.51 (-17.75%)</div>
+                    <PriceChange 
+                      value={itemDetails.prices?.per_month_gold} 
+                      percentage={itemDetails.prices?.per_month_percent}
+                    />
                   </div>
+
+                  <div>
+                    <h3 className="text-csm-text-muted text-xs md:text-sm">Year</h3>
+                    <PriceChange 
+                      value={itemDetails.prices?.per_year_gold} 
+                      percentage={itemDetails.prices?.per_year_percent}
+                    />
+                  </div>
+
                 </div>
 
                 <div className="mt-auto">
@@ -156,61 +255,8 @@ const ItemDetails: React.FC = () => {
         {/* Price History */}
         <div className="mb-6 md:mb-8">
           <h2 className="text-lg md:text-xl font-bold text-white mb-3 md:mb-4">{t('priceHistory.title')}</h2>
-          <div className="card rounded-xl p-4 md:p-6">
-            {/* Replace placeholder with actual chart */}
-            <PriceHistoryChart height={400} />
-
-            {/* Time period buttons */}
-            <div className="flex flex-wrap justify-center mt-4 gap-1 md:gap-0">
-              <button
-                className={`px-3 py-2 md:px-4 md:py-2 md:mx-2 rounded-md ${selectedTimeRange === '7D'
-                  ? 'bg-csm-blue-primary text-white'
-                  : 'bg-csm-bg-lighter text-csm-text-secondary hover:bg-csm-blue-primary hover:text-white'}`}
-                onClick={() => setSelectedTimeRange('7D')}
-              >
-                7D
-              </button>
-              <button
-                className={`px-3 py-2 md:px-4 md:py-2 md:mx-2 rounded-md ${selectedTimeRange === '1M'
-                  ? 'bg-csm-blue-primary text-white'
-                  : 'bg-csm-bg-lighter text-csm-text-secondary hover:bg-csm-blue-primary hover:text-white'}`}
-                onClick={() => setSelectedTimeRange('1M')}
-              >
-                1M
-              </button>
-              <button
-                className={`px-3 py-2 md:px-4 md:py-2 md:mx-2 rounded-md ${selectedTimeRange === '3M'
-                  ? 'bg-csm-blue-primary text-white'
-                  : 'bg-csm-bg-lighter text-csm-text-secondary hover:bg-csm-blue-primary hover:text-white'}`}
-                onClick={() => setSelectedTimeRange('3M')}
-              >
-                3M
-              </button>
-              <button
-                className={`px-3 py-2 md:px-4 md:py-2 md:mx-2 rounded-md ${selectedTimeRange === '6M'
-                  ? 'bg-csm-blue-primary text-white'
-                  : 'bg-csm-bg-lighter text-csm-text-secondary hover:bg-csm-blue-primary hover:text-white'}`}
-                onClick={() => setSelectedTimeRange('6M')}
-              >
-                6M
-              </button>
-              <button
-                className={`px-3 py-2 md:px-4 md:py-2 md:mx-2 rounded-md ${selectedTimeRange === '1Y'
-                  ? 'bg-csm-blue-primary text-white'
-                  : 'bg-csm-bg-lighter text-csm-text-secondary hover:bg-csm-blue-primary hover:text-white'}`}
-                onClick={() => setSelectedTimeRange('1Y')}
-              >
-                1Y
-              </button>
-              <button
-                className={`px-3 py-2 md:px-4 md:py-2 md:mx-2 rounded-md ${selectedTimeRange === 'All'
-                  ? 'bg-csm-blue-primary text-white'
-                  : 'bg-csm-bg-lighter text-csm-text-secondary hover:bg-csm-blue-primary hover:text-white'}`}
-                onClick={() => setSelectedTimeRange('All')}
-              >
-                All
-              </button>
-            </div>
+          <div className="bg-csm-bg-card rounded-xl p-4 md:p-6">
+            <PriceHistoryChart height={400} itemName={itemDetails.name} />
           </div>
         </div>
 
@@ -234,62 +280,63 @@ const ItemDetails: React.FC = () => {
             {/* Magazine Capacity */}
             <div className="flex justify-between items-center px-4 md:px-6 py-3 md:py-4 border-b border-csm-border">
               <span className="text-csm-text-secondary text-base md:text-lg">{t('characteristics.magazine_capacity')}</span>
-              <span className="text-white text-base md:text-lg font-semibold">30/90</span>
+              <span className="text-white text-base md:text-lg font-semibold">{itemDetails.weapon.ammo}</span>
             </div>
 
             {/* Rate of Fire */}
             <div className="flex justify-between items-center px-4 md:px-6 py-3 md:py-4 border-b border-csm-border">
               <span className="text-csm-text-secondary text-base md:text-lg">{t('characteristics.rate_of_fire')}</span>
-              <span className="text-white text-base md:text-lg font-semibold">600</span>
+              <span className="text-white text-base md:text-lg font-semibold">{itemDetails.weapon.fire_rate}</span>
             </div>
 
             {/* Movement Speed */}
             <div className="flex justify-between items-center px-4 md:px-6 py-3 md:py-4 border-b border-csm-border">
               <span className="text-csm-text-secondary text-base md:text-lg">{t('characteristics.movement_speed')}</span>
-              <span className="text-white text-base md:text-lg font-semibold">215 RPM</span>
+              <span className="text-white text-base md:text-lg font-semibold">215 RP</span>
             </div>
 
             {/* Kill Reward */}
             <div className="flex justify-between items-center px-4 md:px-6 py-3 md:py-4 border-b border-csm-border">
               <span className="text-csm-text-secondary text-base md:text-lg">{t('characteristics.kill_reward')}</span>
-              <span className="text-white text-base md:text-lg font-semibold">G 300.00</span>
+              <span className="text-white text-base md:text-lg font-semibold">null</span>
             </div>
 
             {/* Price */}
             <div className="flex justify-between items-center px-4 md:px-6 py-3 md:py-4">
               <span className="text-csm-text-secondary text-base md:text-lg">{t('characteristics.price')}</span>
-              <span className="text-white text-base md:text-lg font-semibold">G 2700.00</span>
+              <span className="text-white text-base md:text-lg font-semibold">$ {itemDetails.weapon.cost}</span>
             </div>
           </div>
         </div>
 
-        {/* Damage Stats Section */}
-        <DamageStats />
+        {/* Damage Stats Section with real data */}
+        <DamageStats damageInfo={itemDetails.weapon.damage_info} />
 
         {/* Weapon Stats (Shooting Pattern) */}
         <WeaponStats />
 
-        {/* Gallery */}
-        <div className="mb-6 md:mb-8">
-          <h2 className="text-lg md:text-xl font-bold text-white mb-3 md:mb-4">{t('gallery.title')}</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 md:gap-4">
-            {galleryImages.map((image) => (
-              <div
-                key={image.id}
-                className="gallery-card rounded-xl overflow-hidden cursor-pointer hover:opacity-90 transition-opacity"
-                onClick={() => openFullscreen(image)}
-              >
-                <div className="gallery-image-container">
-                  <img
-                    src={image.src}
-                    alt={image.alt}
-                    className="gallery-image aspect-[16/9]"
-                  />
+        {/* Gallery - only show if there are images */}
+        {itemDetails.gallery.length > 0 && (
+          <div className="mb-6 md:mb-8">
+            <h2 className="text-lg md:text-xl font-bold text-white mb-3 md:mb-4">{t('gallery.title')}</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 md:gap-4">
+              {itemDetails.gallery.map((image, index) => (
+                <div
+                  key={index}
+                  className="gallery-card rounded-xl overflow-hidden cursor-pointer hover:opacity-90 transition-opacity"
+                >
+                  <div className="gallery-image-container">
+                    <img
+                      src={API_URL + image}
+                      alt={`${itemDetails.name} - Gallery ${index + 1}`}
+                      className="gallery-image aspect-[16/9]"
+                    />
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Similar Skins */}
         <div className="mb-6 md:mb-8">

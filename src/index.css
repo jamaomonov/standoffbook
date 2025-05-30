@@ -38,7 +38,7 @@ body {
 .card {
   background-color: var(--color-csm-bg-card);
   border-radius: 0.75rem;
-  padding: 1.5rem;
+  padding: 0.75rem;
 }
 
 .btn-primary {

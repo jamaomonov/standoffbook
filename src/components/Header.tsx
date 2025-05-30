@@ -1,11 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import standoffbookLogo from '../assets/standoffbook-logo.png';
 import LanguageSwitcher from './LanguageSwitcher';
 import LoginModal from './LoginModal';
 import { useAuth } from '../contexts/AuthContext';
 import defaultAvatar from '../assets/default-avatar.jpg';
+import { searchItems, type SearchResult } from '../api/search';
+import { API_URL } from '../api/config';
 
 // Icons for navigation
 const ItemsIcon = () => (
@@ -82,53 +84,75 @@ const OtherIcon = () => (
   </svg>
 );
 
+interface Category {
+  id: string;
+  name: string;
+  icon: JSX.Element;
+  isLink: boolean;
+  path?: string;
+  items?: string[];
+}
+
 // Category data with icons
-const categories = [
+const categories: Category[] = [
   {
     id: 'knives',
     name: 'Knives',
     icon: <KnivesIcon />,
-    items: ['Karambit', 'Bayonet', 'Butterfly', 'Huntsman', 'Flip', 'Classic']
+    isLink: true,
+    path: '/knives'
   },
   {
     id: 'gloves',
     name: 'Gloves',
     icon: <GlovesIcon />,
-    items: ['Sport', 'Driver', 'Specialist', 'Moto', 'Snakebite', 'Wraps']
+    isLink: true,
+    path: '/gloves'
   },
   {
     id: 'weapons',
     name: 'Weapons',
     icon: <WeaponsIcon />,
-    items: ['Pistols', 'Rifles', 'Snipers', 'SMGs', 'Shotguns', 'Machine Guns']
+    isLink: true,
+    path: '/weapons'
   },
   {
     id: 'stickers',
     name: 'Stickers',
     icon: <StickersIcon />,
-    items: ['Rare', 'Team', 'Tournament', 'Player Signatures', 'Sticker Capsules']
+    isLink: true,
+    path: '/stickers'
   },
   {
-    id: 'keychains',
-    name: 'Keychains',
+    id: 'charms',
+    name: 'Charms',
     icon: <KeychainsIcon />,
-    items: ['Rare', 'Common', 'Exclusive', 'Team']
+    isLink: true,
+    path: '/charms'
   },
   {
     id: 'other',
     name: 'Other',
     icon: <OtherIcon />,
-    items: ['Patches', 'Music', 'Graffiti', 'Agents']
+    isLink: false,
+    items: ['Conatainers', 'Grafitties', 'Grenades', 'Fragments']
   }
 ];
 
 const Header: React.FC = () => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const { currentUser, logout } = useAuth();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+  
+  // Добавляем состояния для поиска
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [showResults, setShowResults] = useState(false);
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -158,6 +182,65 @@ const Header: React.FC = () => {
     }
   };
 
+  // Функция debounce
+  const debounce = (func: Function, wait: number) => {
+    let timeout: NodeJS.Timeout;
+    return (...args: any[]) => {
+      clearTimeout(timeout);
+      timeout = setTimeout(() => func(...args), wait);
+    };
+  };
+
+  // Обновляем функцию поиска
+  const searchItemsWithLoading = async (query: string) => {
+    if (!query.trim()) {
+      setSearchResults([]);
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const results = await searchItems(query);
+      setSearchResults(results);
+      setShowResults(true);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Создаем debounced версию функции поиска
+  const debouncedSearch = useCallback(
+    debounce((query: string) => searchItemsWithLoading(query), 500),
+    []
+  );
+
+  // Обработчик изменения поискового запроса
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const query = e.target.value;
+    setSearchQuery(query);
+    debouncedSearch(query);
+  };
+
+  // Обработчик клика по результату поиска
+  const handleResultClick = (slug: string) => {
+    navigate(`/item/${slug}`);
+    setSearchQuery('');
+    setShowResults(false);
+    setIsSearchOpen(false);
+  };
+
+  // Закрываем результаты при клике вне
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (!(e.target as HTMLElement).closest('.search-container')) {
+        setShowResults(false);
+      }
+    };
+
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
+  }, []);
+
   return (
     <header className="bg-csm-bg-card border-b border-csm-border">
       {/* Top navigation bar */}
@@ -185,17 +268,46 @@ const Header: React.FC = () => {
             </div>
 
             <div className="flex items-center space-x-3">
-              {/* Desktop Search - updated design */}
+              {/* Desktop Search - обновленный дизайн с индикатором загрузки */}
               <div className="hidden md:block">
-                <div className="relative">
+                <div className="relative search-container">
                   <input
                     type="text"
+                    value={searchQuery}
+                    onChange={handleSearchChange}
                     placeholder={t('header.search')}
-                    className="bg-[#0a0c0e] text-white py-2 pl-10 pr-4 rounded border border-[#2e3038] w-64 focus:outline-none focus:border-csm-blue-accent transition-colors"
+                    className="bg-[#0a0c0e] text-white py-2 pl-10 pr-12 rounded border border-[#2e3038] w-64 focus:outline-none focus:border-csm-blue-accent transition-colors"
                   />
                   <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#8a92a1]">
                     <SearchIcon />
                   </div>
+                  {isLoading && (
+                    <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                      <svg className="animate-spin h-5 w-5 text-csm-blue-accent" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                    </div>
+                  )}
+
+                  {/* Выпадающий список результатов */}
+                  {showResults && searchResults.length > 0 && (
+                    <div className="absolute top-full left-0 right-0 mt-2 bg-csm-bg-card border border-csm-border rounded-md shadow-lg overflow-hidden z-50">
+                      {searchResults.map((result) => (
+                        <button
+                          key={result.id}
+                          onClick={() => handleResultClick(result.slug)}
+                          className="w-full flex items-center space-x-3 p-3 hover:bg-csm-bg-darker transition-colors"
+                        >
+                          <img src={API_URL + result.photo} alt={result.name} className="h-10 object-cover rounded" />
+                          <div className="flex flex-col items-start">
+                            <span className="text-white text-sm text-left">{result.name}</span>
+                            <span className="text-csm-text-secondary text-xs">{result.rarity.name}</span>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -271,7 +383,7 @@ const Header: React.FC = () => {
         </div>
       </div>
 
-      {/* Desktop Categories Bar with "Item types" as a text link and others as dropdowns */}
+      {/* Desktop Categories Bar */}
       <div className="hidden md:block py-1 border-b border-csm-border bg-csm-bg-card">
         <div className="container mx-auto px-4">
           <div className="flex items-center space-x-6 text-sm">
@@ -283,35 +395,46 @@ const Header: React.FC = () => {
               Item types
             </a>
 
-            {/* Other categories as dropdowns with icons */}
+            {/* Categories */}
             {categories.map((category) => (
               <div key={category.id} className="relative">
-                <button
-                  className="flex items-center space-x-1 py-2 text-white hover:text-csm-blue-accent transition-colors"
-                  onClick={() => toggleDropdown(category.id)}
-                  aria-expanded={activeDropdown === category.id}
-                  aria-haspopup="true"
-                >
-                  <span className="mr-1">{category.icon}</span>
-                  <span>{category.name}</span>
-                  <ChevronDownIcon />
-                </button>
+                {category.isLink && category.path ? (
+                  <Link
+                    to={category.path}
+                    className="flex items-center space-x-1 py-2 text-white hover:text-csm-blue-accent transition-colors"
+                  >
+                    <span className="mr-1">{category.icon}</span>
+                    <span>{category.name}</span>
+                  </Link>
+                ) : (
+                  <>
+                    <button
+                      className="flex items-center space-x-1 py-2 text-white hover:text-csm-blue-accent transition-colors"
+                      onClick={() => toggleDropdown(category.id)}
+                      aria-expanded={activeDropdown === category.id}
+                      aria-haspopup="true"
+                    >
+                      <span className="mr-1">{category.icon}</span>
+                      <span>{category.name}</span>
+                    </button>
 
-                {/* Dropdown Menu */}
-                {activeDropdown === category.id && (
-                  <div className="absolute left-0 top-full mt-1 w-48 bg-csm-bg-card rounded-md shadow-lg overflow-hidden z-20">
-                    <div className="py-1">
-                      {category.items.map((item, index) => (
-                        <a
-                          key={index}
-                          href="#"
-                          className="block px-4 py-2 text-sm text-csm-text-secondary hover:bg-csm-bg-lighter hover:text-white"
-                        >
-                          {item}
-                        </a>
-                      ))}
-                    </div>
-                  </div>
+                    {/* Dropdown Menu только для Other */}
+                    {activeDropdown === category.id && category.items && (
+                      <div className="absolute left-0 top-full mt-1 w-48 bg-csm-bg-card rounded-md shadow-lg overflow-hidden z-20">
+                        <div className="py-1">
+                          {category.items.map((item, index) => (
+                            <a
+                              key={index}
+                              href="#"
+                              className="block px-4 py-2 text-sm text-csm-text-secondary hover:bg-csm-bg-lighter hover:text-white"
+                            >
+                              {item}
+                            </a>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </>
                 )}
               </div>
             ))}
@@ -337,7 +460,7 @@ const Header: React.FC = () => {
               <span>{t('header.mobile.forum')}</span>
             </Link>
 
-            {/* Mobile Categories with icons */}
+            {/* Mobile Categories */}
             <div className="pt-2 border-t border-csm-border">
               <p className="text-csm-text-secondary text-xs mb-3">Categories</p>
 
@@ -349,35 +472,47 @@ const Header: React.FC = () => {
                 Item types
               </a>
 
-              {/* Other categories as accordions with icons */}
+              {/* Categories */}
               {categories.map((category) => (
                 <div key={category.id} className="mb-2">
-                  <button
-                    className="flex items-center justify-between w-full py-2 text-left text-white"
-                    onClick={() => toggleDropdown(category.id)}
-                    aria-expanded={activeDropdown === category.id}
-                  >
-                    <span className="flex items-center">
+                  {category.isLink && category.path ? (
+                    <Link
+                      to={category.path}
+                      className="flex items-center py-2 text-white hover:text-csm-blue-accent"
+                    >
                       <span className="mr-2">{category.icon}</span>
                       <span>{category.name}</span>
-                    </span>
-                    <span className={`transform transition-transform ${activeDropdown === category.id ? 'rotate-180' : ''}`}>
-                      <ChevronDownIcon />
-                    </span>
-                  </button>
+                    </Link>
+                  ) : (
+                    <>
+                      <button
+                        className="flex items-center justify-between w-full py-2 text-left text-white"
+                        onClick={() => toggleDropdown(category.id)}
+                        aria-expanded={activeDropdown === category.id}
+                      >
+                        <span className="flex items-center">
+                          <span className="mr-2">{category.icon}</span>
+                          <span>{category.name}</span>
+                        </span>
+                        <span className={`transform transition-transform ${activeDropdown === category.id ? 'rotate-180' : ''}`}>
+                          <ChevronDownIcon />
+                        </span>
+                      </button>
 
-                  {activeDropdown === category.id && (
-                    <div className="pl-4 pt-2 pb-1">
-                      {category.items.map((item, index) => (
-                        <a
-                          key={index}
-                          href="#"
-                          className="block py-2 text-sm text-csm-text-secondary hover:text-white"
-                        >
-                          {item}
-                        </a>
-                      ))}
-                    </div>
+                      {activeDropdown === category.id && category.items && (
+                        <div className="pl-4 pt-2 pb-1">
+                          {category.items.map((item, index) => (
+                            <a
+                              key={index}
+                              href="#"
+                              className="block py-2 text-sm text-csm-text-secondary hover:text-white"
+                            >
+                              {item}
+                            </a>
+                          ))}
+                        </div>
+                      )}
+                    </>
                   )}
                 </div>
               ))}
@@ -423,7 +558,7 @@ const Header: React.FC = () => {
         </div>
       )}
 
-      {/* Mobile Search Modal */}
+      {/* Mobile Search Modal - обновленный */}
       {isSearchOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-70 z-50 flex flex-col p-4">
           <div className="relative bg-csm-bg-card rounded-xl p-4 w-full max-w-lg mx-auto mt-16">
@@ -437,16 +572,45 @@ const Header: React.FC = () => {
             </button>
 
             <h3 className="text-white text-lg mb-4">{t('header.search')}</h3>
-            <div className="relative">
+            <div className="relative search-container">
               <input
                 type="text"
+                value={searchQuery}
+                onChange={handleSearchChange}
                 placeholder={t('header.search_items')}
-                className="bg-[#0a0c0e] text-white py-3 pl-10 pr-4 rounded border border-[#2e3038] w-full focus:outline-none focus:border-csm-blue-accent transition-colors"
+                className="bg-[#0a0c0e] text-white py-3 pl-10 pr-12 rounded border border-[#2e3038] w-full focus:outline-none focus:border-csm-blue-accent transition-colors"
                 autoFocus
               />
               <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#8a92a1]">
                 <SearchIcon />
               </div>
+              {isLoading && (
+                <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                  <svg className="animate-spin h-5 w-5 text-csm-blue-accent" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                </div>
+              )}
+
+              {/* Выпадающий список результатов для мобильной версии */}
+              {showResults && searchResults.length > 0 && (
+                <div className="absolute top-full left-0 right-0 mt-2 bg-csm-bg-card border border-csm-border rounded-md shadow-lg overflow-hidden">
+                  {searchResults.map((result) => (
+                    <button
+                      key={result.id}
+                      onClick={() => handleResultClick(result.slug)}
+                      className="w-full flex items-center space-x-3 p-3 hover:bg-csm-bg-darker transition-colors"
+                    >
+                      <img src={API_URL + result.photo} alt={result.name} className="h-10 object-cover rounded" />
+                      <div className="flex flex-col items-start">
+                        <span className="text-white text-sm text-left">{result.name}</span>
+                        <span className="text-csm-text-secondary text-xs">{result.rarity.name}</span>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
 
             <div className="mt-4">

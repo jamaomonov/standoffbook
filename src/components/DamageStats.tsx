@@ -1,39 +1,25 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-interface DamageData {
-  unarmored: {
-    head: number;
-    chest: number;
-    stomach: number;
-    legs: number;
-  };
-  armored: {
-    head: number;
-    chest: number;
-    stomach: number;
-    legs: number;
-  };
+interface WeaponDamageInfo {
+  arms: number;
+  head: number;
+  legs: number;
+  chest: number;
+  stomach: number;
 }
 
-const DamageStats: React.FC = () => {
-  const { t } = useTranslation();
+interface WeaponDamage {
+  armor: WeaponDamageInfo;
+  no_armor: WeaponDamageInfo;
+}
 
-  // Sample damage data for USP-S
-  const damageData: DamageData = {
-    unarmored: {
-      head: 143,
-      chest: 35,
-      stomach: 44,
-      legs: 26
-    },
-    armored: {
-      head: 111,
-      chest: 27,
-      stomach: 34,
-      legs: 26
-    }
-  };
+interface DamageStatsProps {
+  damageInfo: WeaponDamage;
+}
+
+const DamageStats: React.FC<DamageStatsProps> = ({ damageInfo }) => {
+  const { t } = useTranslation();
 
   return (
     <div className="mb-6 md:mb-8">
@@ -71,22 +57,22 @@ const DamageStats: React.FC = () => {
               <div className="w-full pl-12 pr-4">
                 <div className="h-16 flex items-center justify-end">
                   <div className="text-xl lg:text-2xl font-semibold text-[#ff5757]">
-                    {damageData.unarmored.head}
+                    {damageInfo.no_armor.head}
                   </div>
                 </div>
                 <div className="h-16 flex items-center justify-end">
                   <div className="text-xl lg:text-2xl font-semibold text-white">
-                    {damageData.unarmored.chest}
+                    {damageInfo.no_armor.chest}
                   </div>
                 </div>
                 <div className="h-16 flex items-center justify-end">
                   <div className="text-xl lg:text-2xl font-semibold text-white">
-                    {damageData.unarmored.stomach}
+                    {damageInfo.no_armor.stomach}
                   </div>
                 </div>
                 <div className="h-16 flex items-center justify-end">
                   <div className="text-xl lg:text-2xl font-semibold text-white">
-                    {damageData.unarmored.legs}
+                    {damageInfo.no_armor.legs}
                   </div>
                 </div>
               </div>
@@ -104,22 +90,22 @@ const DamageStats: React.FC = () => {
               <div className="w-full pl-12 pr-4">
                 <div className="h-16 flex items-center justify-end">
                   <div className="text-xl lg:text-2xl font-semibold text-[#ff5757]">
-                    {damageData.armored.head}
+                    {damageInfo.armor.head}
                   </div>
                 </div>
                 <div className="h-16 flex items-center justify-end">
                   <div className="text-xl lg:text-2xl font-semibold text-white">
-                    {damageData.armored.chest}
+                    {damageInfo.armor.chest}
                   </div>
                 </div>
                 <div className="h-16 flex items-center justify-end">
                   <div className="text-xl lg:text-2xl font-semibold text-white">
-                    {damageData.armored.stomach}
+                    {damageInfo.armor.stomach}
                   </div>
                 </div>
                 <div className="h-16 flex items-center justify-end">
                   <div className="text-xl lg:text-2xl font-semibold text-white">
-                    {damageData.armored.legs}
+                    {damageInfo.armor.legs}
                   </div>
                 </div>
               </div>
@@ -138,12 +124,12 @@ const DamageStats: React.FC = () => {
             </div>
             <div className="flex items-center justify-center">
               <div className="text-xl font-semibold text-[#ff5757]">
-                {damageData.unarmored.head}
+                {damageInfo.no_armor.head}
               </div>
             </div>
             <div className="flex items-center justify-center">
               <div className="text-xl font-semibold text-[#ff5757]">
-                {damageData.armored.head}
+                {damageInfo.armor.head}
               </div>
             </div>
 
@@ -153,12 +139,12 @@ const DamageStats: React.FC = () => {
             </div>
             <div className="flex items-center justify-center">
               <div className="text-xl font-semibold text-white">
-                {damageData.unarmored.chest}
+                {damageInfo.no_armor.chest}
               </div>
             </div>
             <div className="flex items-center justify-center">
               <div className="text-xl font-semibold text-white">
-                {damageData.armored.chest}
+                {damageInfo.armor.chest}
               </div>
             </div>
 
@@ -168,12 +154,12 @@ const DamageStats: React.FC = () => {
             </div>
             <div className="flex items-center justify-center">
               <div className="text-xl font-semibold text-white">
-                {damageData.unarmored.stomach}
+                {damageInfo.no_armor.stomach}
               </div>
             </div>
             <div className="flex items-center justify-center">
               <div className="text-xl font-semibold text-white">
-                {damageData.armored.stomach}
+                {damageInfo.armor.stomach}
               </div>
             </div>
 
@@ -183,12 +169,12 @@ const DamageStats: React.FC = () => {
             </div>
             <div className="flex items-center justify-center">
               <div className="text-xl font-semibold text-white">
-                {damageData.unarmored.legs}
+                {damageInfo.no_armor.legs}
               </div>
             </div>
             <div className="flex items-center justify-center">
               <div className="text-xl font-semibold text-white">
-                {damageData.armored.legs}
+                {damageInfo.armor.legs}
               </div>
             </div>
           </div>
