@@ -1,3 +1,4 @@
+@import './styles/fonts.css';
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -29,11 +30,16 @@ html, body {
 }
 
 body {
-  font-family: 'Inter', sans-serif;
+  font-family: var(--font-family-base);
+  font-weight: 700;
   background-color: var(--color-csm-bg-dark);
   color: white;
   min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
+
+
 
 .card {
   background-color: var(--color-csm-bg-card);

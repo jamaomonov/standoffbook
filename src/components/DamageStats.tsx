@@ -23,25 +23,25 @@ const DamageStats: React.FC<DamageStatsProps> = ({ damageInfo }) => {
 
   return (
     <div className="mb-6 md:mb-8">
-      <h2 className="text-lg md:text-xl font-bold text-[#8a92a1] mb-3 md:mb-4">{t('damage.title')}</h2>
+      <h2 className="text-lg md:text-xl font-bold text-white mb-3 md:mb-4">{t('damage.title')}</h2>
 
       {/* Desktop view (hidden on mobile) */}
       <div className="hidden md:block">
-        <div className="bg-[#171923] rounded-xl p-6">
+        <div className="bg-csm-bg-card rounded-xl p-4 md:p-6">
           <div className="flex">
             {/* Column with body part labels */}
             <div className="w-1/5">
               <div className="h-16 flex items-center">
-                <div className="text-[#8a92a1] text-lg lg:text-xl">{t('damage.head')}</div>
+                <div className="text-csm-text-muted text-lg lg:text-xl">{t('damage.head')}</div>
               </div>
               <div className="h-16 flex items-center">
-                <div className="text-[#8a92a1] text-lg lg:text-xl">{t('damage.chest_arm')}</div>
+                <div className="text-csm-text-muted text-lg lg:text-xl">{t('damage.chest_arm')}</div>
               </div>
               <div className="h-16 flex items-center">
-                <div className="text-[#8a92a1] text-lg lg:text-xl">{t('damage.stomach')}</div>
+                <div className="text-csm-text-muted text-lg lg:text-xl">{t('damage.stomach')}</div>
               </div>
               <div className="h-16 flex items-center">
-                <div className="text-[#8a92a1] text-lg lg:text-xl">{t('damage.legs')}</div>
+                <div className="text-csm-text-muted text-lg lg:text-xl">{t('damage.legs')}</div>
               </div>
             </div>
 

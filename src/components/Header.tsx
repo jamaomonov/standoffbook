@@ -254,7 +254,7 @@ const Header: React.FC = () => {
               <nav className="hidden md:flex space-x-6">
                 <Link to="/" className="navbar-link flex items-center space-x-2">
                   <ItemsIcon />
-                  <span>{t('header.mobile.items')}</span>
+                  <span className="text-white">{t('header.mobile.main')}</span>
                 </Link>
                 <Link to="/news" className="navbar-link flex items-center space-x-2">
                   <NewsIcon />

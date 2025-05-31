@@ -78,7 +78,7 @@ const PriceHistoryChart: React.FC<PriceHistoryChartProps> = ({
     });
 
     const shareData = {
-      title: `Цена ${itemName} - standoffbook.com`,
+      title: `График ${itemName} - standoffbook.com`,
       text: `Посмотрите историю цен для ${itemName} на standoffbook.com`,
       url: window.location.href
     };
@@ -150,10 +150,10 @@ const PriceHistoryChart: React.FC<PriceHistoryChartProps> = ({
           return `
             <div style="padding: 6px;">
               <div style="margin-bottom: 4px; color: #9ca3af; font-size: ${isMobile ? '10px' : '12px'};">
-                ${new Date(data.axisValue).toLocaleDateString()}
+                ${data.value[0]}
               </div>
               <div style="color: #60a5fa; font-weight: bold; font-size: ${isMobile ? '12px' : '14px'};">
-                ${data.value} G
+                ${data.value[1]} G
               </div>
             </div>
           `;
@@ -430,7 +430,7 @@ const PriceHistoryChart: React.FC<PriceHistoryChartProps> = ({
             className={`px-4 py-2 text-sm font-medium rounded transition-colors ${
               selectedPeriod === period.value
                 ? 'bg-indigo-700 text-white'
-                : 'bg-csm-bg-lighter text-gray-300 hover:bg-[#1a1d24]/80'
+                : 'bg-indigo-900 text-gray-300 hover:bg-indigo-700 text-white'
             }`}
           >
             {period.label}

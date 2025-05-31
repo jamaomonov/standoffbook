@@ -141,7 +141,7 @@ const ItemDetails: React.FC = () => {
     return <div className="container mx-auto py-8 text-white">Loading...</div>;
   }
 
-  if (error || !itemDetails || !itemDetails.category || !itemDetails.type || !itemDetails.rarity || !itemDetails.collection || !itemDetails.weapon) {
+  if (error || !itemDetails || !itemDetails.type || !itemDetails.rarity || !itemDetails.collection) {
     return <div className="container mx-auto py-8 text-red-500">{error || 'Failed to load item details'}</div>;
   }
 
@@ -173,22 +173,24 @@ const ItemDetails: React.FC = () => {
             <div className="bg-csm-bg-card rounded-xl p-4 md:p-6 h-full">
               <div className="flex flex-col h-full">
                 <div className="mb-4">
+                  {itemDetails.category && (
                   <span className="inline-block px-3 py-1 bg-csm-blue-primary text-white text-xs rounded-full mb-2 mr-2">
-                    {itemDetails.category.name}
+                    {itemDetails.category?.name}
+                  </span>
+                  )}
+                  <span className="inline-block px-3 py-1 bg-csm-blue-primary text-white text-xs rounded-full mb-2 mr-2">
+                    {itemDetails?.rarity.name}
                   </span>
                   <span className="inline-block px-3 py-1 bg-csm-blue-primary text-white text-xs rounded-full mb-2 mr-2">
-                    {itemDetails.rarity.name}
-                  </span>
-                  <span className="inline-block px-3 py-1 bg-csm-blue-primary text-white text-xs rounded-full mb-2 mr-2">
-                    {itemDetails.type.name}
+                    {itemDetails?.type.name}
                   </span>
                   <span className="inline-block px-3 py-1 bg-csm-blue-primary text-white text-xs rounded-full mb-2 mr-2">
                     {itemDetails.collection.name}
                   </span>
-                  <h1 className="text-xl md:text-2xl lg:text-3xl font-bold text-white">{itemDetails.name}</h1>
+                  <h1 className="text-xl md:text-2xl lg:text-3xl font-bold text-white mt-3">{itemDetails.name}</h1>
                 </div>
 
-                <div className="grid grid-cols-2 gap-3 md:gap-4 mb-4">
+                <div className="grid grid-cols-2 gap-5 md:gap-5 mb-4">
                   <div>
                     <h3 className="text-csm-text-muted text-xs md:text-sm">{t('itemDetails.community_rating')}</h3>
                     <div className="text-white">
@@ -197,7 +199,6 @@ const ItemDetails: React.FC = () => {
                       <StarIcon />
                       <StarIcon />
                       <span className="text-csm-text-secondary inline-block ml-1">4.31</span>
-                      <span className="text-csm-text-muted text-xs ml-2">695 {t('itemDetails.votes')}</span>
                     </div>
                   </div>
 
@@ -240,13 +241,13 @@ const ItemDetails: React.FC = () => {
 
                 </div>
 
-                <div className="mt-auto">
+                {/* <div className="mt-auto">
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-2 md:gap-4 mt-4">
                     <button className="btn-primary rounded-md">{t('itemDetails.view_in_game')}</button>
                     <button className="btn-secondary rounded-md">{t('itemDetails.check_float')}</button>
                     <button className="btn-secondary rounded-md">{t('itemDetails.add_to_favorites')}</button>
                   </div>
-                </div>
+                </div> */}
               </div>
             </div>
           </div>
@@ -261,66 +262,68 @@ const ItemDetails: React.FC = () => {
         </div>
 
         {/* Characteristics */}
-        <div className="mb-6 md:mb-8">
-          <h2 className="text-lg md:text-xl font-bold text-white mb-3 md:mb-4">{t('characteristics.title')}</h2>
-          <div className="bg-[#171923] rounded-xl overflow-hidden">
-            {/* Team */}
-            <div className="flex justify-between items-center px-4 md:px-6 py-3 md:py-4 border-b border-csm-border">
-              <span className="text-csm-text-secondary text-base md:text-lg">{t('characteristics.team')}</span>
-              <div className="flex items-center">
-                <svg width="24" height="24" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" className="md:w-8 md:h-8">
-                  <path d="M20.9997 8L11.8943 12.2484L16.3314 16L20.9997 8Z" fill="#F7C729"/>
-                  <path d="M5.33301 16.9657L11.8943 12.2484L16.3314 16L5.33301 24L5.33301 16.9657Z" fill="#F7C729"/>
-                  <path d="M26.6663 24L16.3314 16L20.9997 8L26.6663 16.6371V24Z" fill="#F7C729"/>
-                  <path d="M16.3314 16L5.33301 24H26.6663L16.3314 16Z" fill="#F7C729"/>
-                </svg>
+        {itemDetails.weapon && (
+          <div className="mb-6 md:mb-8">
+            <h2 className="text-lg md:text-xl font-bold text-white mb-3 md:mb-4">{t('characteristics.title')}</h2>
+            <div className="bg-csm-bg-card rounded-xl p-4 md:p-6">
+              {/* Team */}
+              <div className="flex justify-between items-center px-4 md:px-6 py-3 md:py-4 border-b border-csm-border">
+                <span className="text-csm-text-muted text-base md:text-lg">{t('characteristics.team')}</span>
+                <div className="flex items-center">
+                  <svg width="24" height="24" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" className="md:w-8 md:h-8">
+                    <path d="M20.9997 8L11.8943 12.2484L16.3314 16L20.9997 8Z" fill="#F7C729"/>
+                    <path d="M5.33301 16.9657L11.8943 12.2484L16.3314 16L5.33301 24L5.33301 16.9657Z" fill="#F7C729"/>
+                    <path d="M26.6663 24L16.3314 16L20.9997 8L26.6663 16.6371V24Z" fill="#F7C729"/>
+                    <path d="M16.3314 16L5.33301 24H26.6663L16.3314 16Z" fill="#F7C729"/>
+                  </svg>
+                </div>
+              </div>
+
+              {/* Magazine Capacity */}
+              <div className="flex justify-between items-center px-4 md:px-6 py-3 md:py-4 border-b border-csm-border">
+                <span className="text-csm-text-muted text-base md:text-lg ">{t('characteristics.magazine_capacity')}</span>
+                <span className="text-white text-base md:text-lg font-semibold">{itemDetails.weapon?.ammo}</span>
+              </div>
+
+              {/* Rate of Fire */}
+              <div className="flex justify-between items-center px-4 md:px-6 py-3 md:py-4 border-b border-csm-border">
+                <span className="text-csm-text-muted text-base md:text-lg">{t('characteristics.rate_of_fire')}</span>
+                <span className="text-white text-base md:text-lg font-semibold">{itemDetails.weapon?.fire_rate}</span>
+              </div>
+
+              {/* Movement Speed */}
+              <div className="flex justify-between items-center px-4 md:px-6 py-3 md:py-4 border-b border-csm-border">
+                <span className="text-csm-text-muted text-base md:text-lg">{t('characteristics.movement_speed')}</span>
+                <span className="text-white text-base md:text-lg font-semibold">215 RP</span>
+              </div>
+
+              {/* Kill Reward */}
+              <div className="flex justify-between items-center px-4 md:px-6 py-3 md:py-4 border-b border-csm-border">
+                <span className="text-csm-text-muted text-base md:text-lg">{t('characteristics.kill_reward')}</span>
+                <span className="text-white text-base md:text-lg font-semibold">null</span>
+              </div>
+
+              {/* Price */}
+              <div className="flex justify-between items-center px-4 md:px-6 py-3 md:py-4">
+                <span className="text-csm-text-muted text-base md:text-lg">{t('characteristics.price')}</span>
+                <span className="text-white text-base md:text-lg font-semibold">$ {itemDetails.weapon?.cost}</span>
               </div>
             </div>
-
-            {/* Magazine Capacity */}
-            <div className="flex justify-between items-center px-4 md:px-6 py-3 md:py-4 border-b border-csm-border">
-              <span className="text-csm-text-secondary text-base md:text-lg">{t('characteristics.magazine_capacity')}</span>
-              <span className="text-white text-base md:text-lg font-semibold">{itemDetails.weapon.ammo}</span>
-            </div>
-
-            {/* Rate of Fire */}
-            <div className="flex justify-between items-center px-4 md:px-6 py-3 md:py-4 border-b border-csm-border">
-              <span className="text-csm-text-secondary text-base md:text-lg">{t('characteristics.rate_of_fire')}</span>
-              <span className="text-white text-base md:text-lg font-semibold">{itemDetails.weapon.fire_rate}</span>
-            </div>
-
-            {/* Movement Speed */}
-            <div className="flex justify-between items-center px-4 md:px-6 py-3 md:py-4 border-b border-csm-border">
-              <span className="text-csm-text-secondary text-base md:text-lg">{t('characteristics.movement_speed')}</span>
-              <span className="text-white text-base md:text-lg font-semibold">215 RP</span>
-            </div>
-
-            {/* Kill Reward */}
-            <div className="flex justify-between items-center px-4 md:px-6 py-3 md:py-4 border-b border-csm-border">
-              <span className="text-csm-text-secondary text-base md:text-lg">{t('characteristics.kill_reward')}</span>
-              <span className="text-white text-base md:text-lg font-semibold">null</span>
-            </div>
-
-            {/* Price */}
-            <div className="flex justify-between items-center px-4 md:px-6 py-3 md:py-4">
-              <span className="text-csm-text-secondary text-base md:text-lg">{t('characteristics.price')}</span>
-              <span className="text-white text-base md:text-lg font-semibold">$ {itemDetails.weapon.cost}</span>
-            </div>
           </div>
-        </div>
+        )}
 
         {/* Damage Stats Section with real data */}
-        <DamageStats damageInfo={itemDetails.weapon.damage_info} />
+        {itemDetails.weapon?.damage_info && <DamageStats damageInfo={itemDetails.weapon.damage_info} />}
 
         {/* Weapon Stats (Shooting Pattern) */}
-        <WeaponStats />
+        {itemDetails.weapon && <WeaponStats />}
 
         {/* Gallery - only show if there are images */}
-        {itemDetails.gallery.length > 0 && (
+        {itemDetails?.gallery.length > 0 && (
           <div className="mb-6 md:mb-8">
             <h2 className="text-lg md:text-xl font-bold text-white mb-3 md:mb-4">{t('gallery.title')}</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 md:gap-4">
-              {itemDetails.gallery.map((image, index) => (
+              {itemDetails?.gallery.map((image, index) => (
                 <div
                   key={index}
                   className="gallery-card rounded-xl overflow-hidden cursor-pointer hover:opacity-90 transition-opacity"

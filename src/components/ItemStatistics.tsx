@@ -104,23 +104,24 @@ const ItemStatistics: React.FC = () => {
                 >
                   {/* Item Column */}
                   <td className="p-3 lg:p-4">
-                    <div className="flex items-center space-x-2 lg:space-x-3">
-                      <img
-                        src={API_URL + item.photo}
-                        alt={item.name}
-                        className="w-20 lg:w-24 rounded-lg object-cover"
-                      />
-                      <div>
-                        <span className="text-white font-medium truncate max-w-[120px] lg:max-w-[200px] text-sm lg:text-base block">
-                          {item.name}
-                        </span>
-                        <span className="text-csm-text-secondary text-xs">
-                          {item.rarity}
-                        </span>
+                    <a href={`/item/${item?.slug}`} className="hover:underline">
+                      <div className="flex items-center space-x-2 lg:space-x-3">
+                        <img
+                          src={API_URL + item.photo}
+                          alt={item.name}
+                          className="w-20 lg:w-24 rounded-lg object-cover"
+                        />
+                        <div>
+                          <span className="text-white truncate max-w-[120px] lg:max-w-[200px] text-sm lg:text-base block">
+                            {item.name}
+                          </span>
+                          <span className="text-csm-text-secondary text-xs">
+                            {item.rarity}
+                          </span>
+                        </div>
                       </div>
-                    </div>
+                    </a>
                   </td>
-
                   {/* Current Price */}
                   <td className="p-3 lg:p-4">
                     <span className="text-csm-blue-accent font-medium text-sm lg:text-base">
@@ -130,9 +131,9 @@ const ItemStatistics: React.FC = () => {
 
                   {/* Per Day */}
                   <td className="p-3 lg:p-4">
-                    <div className="flex flex-col">
-                      <span className="text-white text-xs lg:text-sm">{(item.price?.per_day_gold || 0).toFixed(2)} G</span>
-                      <span className={`text-xs ${(item.price?.per_day_percent || 0) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                    <div className={`flex flex-col ${(item.price?.per_day_percent || 0) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                      <span className="text-xs lg:text-sm">{(item.price?.per_day_gold || 0) >= 0 ? '+' : ''}{(item.price?.per_day_gold || 0).toFixed(2)} G</span>
+                      <span className="text-xs">
                         {(item.price?.per_day_percent || 0) >= 0 ? '+' : ''}{(item.price?.per_day_percent || 0).toFixed(2)}%
                       </span>
                     </div>
@@ -140,9 +141,9 @@ const ItemStatistics: React.FC = () => {
 
                   {/* Per Week */}
                   <td className="p-3 lg:p-4">
-                    <div className="flex flex-col">
-                      <span className="text-white text-xs lg:text-sm">{(item.price?.per_week_gold || 0).toFixed(2)} G</span>
-                      <span className={`text-xs ${(item.price?.per_week_percent || 0) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                    <div className={`flex flex-col ${(item.price?.per_week_percent || 0) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                      <span className="text-xs lg:text-sm">{(item.price?.per_week_gold || 0) >= 0 ? '+' : ''}{(item.price?.per_week_gold || 0).toFixed(2)} G</span>
+                      <span className="text-xs">
                         {(item.price?.per_week_percent || 0) >= 0 ? '+' : ''}{(item.price?.per_week_percent || 0).toFixed(2)}%
                       </span>
                     </div>
@@ -150,9 +151,9 @@ const ItemStatistics: React.FC = () => {
 
                   {/* Per Month */}
                   <td className="p-3 lg:p-4">
-                    <div className="flex flex-col">
-                      <span className="text-white text-xs lg:text-sm">{(item.price?.per_month_gold || 0).toFixed(2)} G</span>
-                      <span className={`text-xs ${(item.price?.per_month_percent || 0) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                    <div className={`flex flex-col ${(item.price?.per_month_percent || 0) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                      <span className="text-xs lg:text-sm">{(item.price?.per_month_gold || 0) >= 0 ? '+' : ''}{(item.price?.per_month_gold || 0).toFixed(2)} G</span>
+                      <span className="text-xs">
                         {(item.price?.per_month_percent || 0) >= 0 ? '+' : ''}{(item.price?.per_month_percent || 0).toFixed(2)}%
                       </span>
                     </div>
@@ -160,9 +161,9 @@ const ItemStatistics: React.FC = () => {
 
                   {/* Per Year */}
                   <td className="p-3 lg:p-4">
-                    <div className="flex flex-col">
-                      <span className="text-white text-xs lg:text-sm">{(item.price?.per_year_gold || 0).toFixed(2)} G</span>
-                      <span className={`text-xs ${(item.price?.per_year_percent || 0) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                    <div className={`flex flex-col ${(item.price?.per_year_percent || 0) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                      <span className="text-xs lg:text-sm">{(item.price?.per_year_gold || 0) >= 0 ? '+' : ''}{(item.price?.per_year_gold || 0).toFixed(2)} G</span>
+                      <span className="text-xs">
                         {(item.price?.per_year_percent || 0) >= 0 ? '+' : ''}{(item.price?.per_year_percent || 0).toFixed(2)}%
                       </span>
                     </div>

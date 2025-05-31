@@ -49,13 +49,13 @@ export interface ItemDetails {
   rarity: {
     name: string;
   };
-  category: {
+  category?: {
     name: string;
-  };
+  } | null;
   collection: {
     name: string;
   };
-  weapon: Weapon;
+  weapon: Weapon | null;
   gallery: string[];
   prices?: PriceStats;
 }
