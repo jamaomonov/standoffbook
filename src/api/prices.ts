@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { API_URL } from './config';
 
 interface PriceHistoryResponse {
   data: Array<{
@@ -15,12 +16,12 @@ interface PriceHistoryResponse {
   };
 }
 
-export const fetchItemPriceHistory = async (itemName: string) => {
-  const encodedName = encodeURIComponent(itemName);
+export const fetchItemPriceHistory = async (item_id: number) => {
+  const encodedName = encodeURIComponent(item_id);
   
   try {
     const response = await axios.get<PriceHistoryResponse>(
-      `https://api.standoff.uz/api/v1/prices?name=${encodedName}`
+      `${API_URL}/api/v1/prices?item_id=${encodedName}`
     );
     
     return response.data.data.map(item => ({

@@ -133,7 +133,8 @@ const MiniChart: React.FC<MiniChartProps> = ({ data, width, height }) => {
             display: false,
             grid: {
               display: false
-            }
+            },
+            min: Math.min(...data.map(d => d.price))
           }
         },
         interaction: {

@@ -41,6 +41,7 @@ export interface PriceStats {
 }
 
 export interface ItemDetails {
+  id: number;
   name: string;
   photo: string;
   type: {
@@ -60,12 +61,38 @@ export interface ItemDetails {
   prices?: PriceStats;
 }
 
+// Хранилище для активных запросов
+const activeRequests = new Map<string, AbortController>();
+
 export const getItemDetails = async (slug: string): Promise<ItemDetails> => {
+  // Отменяем предыдущий запрос для этого же slug, если он существует
+  if (activeRequests.has(slug)) {
+    activeRequests.get(slug)?.abort();
+    activeRequests.delete(slug);
+  }
+
+  // Создаем новый контроллер для текущего запроса
+  const controller = new AbortController();
+  activeRequests.set(slug, controller);
+
   try {
-    const response = await fetch(`${API_URL}/api/v1/item/${slug}`);
+    const response = await fetch(
+      `${API_URL}/api/v1/item/${slug}`,
+      {
+        signal: controller.signal
+      }
+    );
+    
+    // Удаляем контроллер после успешного выполнения запроса
+    activeRequests.delete(slug);
+    
     if (!response.ok) throw new Error('Failed to fetch item details');
     return await response.json();
   } catch (error) {
+    // Если ошибка вызвана отменой запроса, не выбрасываем её
+    if ((error as Error).name === 'AbortError') {
+      throw new Error('Request was cancelled');
+    }
     console.error('Error fetching item details:', error);
     throw error;
   }

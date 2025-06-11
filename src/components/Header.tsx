@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import standoffbookLogo from '../assets/standoffbook-logo.png';
 import LanguageSwitcher from './LanguageSwitcher';
 import LoginModal from './LoginModal';
@@ -8,6 +8,9 @@ import { useAuth } from '../contexts/AuthContext';
 import defaultAvatar from '../assets/default-avatar.jpg';
 import { searchItems, type SearchResult } from '../api/search';
 import { API_URL } from '../api/config';
+import gradientIcon from '../assets/icons/gradient.png';
+import stattrackIcon from '../assets/icons/stattrack.png';
+import patternIcon from '../assets/icons/pattern.png';
 
 // Icons for navigation
 const ItemsIcon = () => (
@@ -84,6 +87,12 @@ const OtherIcon = () => (
   </svg>
 );
 
+const FilterIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+  </svg>
+);
+
 interface Category {
   id: string;
   name: string;
@@ -139,9 +148,53 @@ const categories: Category[] = [
   }
 ];
 
+// Добавляем вспомогательную функцию для определения иконок
+const getItemIcons = (categoryName: string | null) => {
+  if (!categoryName) return [];
+  
+  switch (categoryName) {
+    case 'StatTrack':
+      return [stattrackIcon];
+    case 'Pattern':
+      return [patternIcon];
+    case 'Gradient':
+      return [gradientIcon];
+    case 'Pattern and StatTrack':
+      return [patternIcon, stattrackIcon];
+    case 'Gradient and StatTrack':
+      return [gradientIcon, stattrackIcon];
+    case 'Regular':
+    default:
+      return [];
+  }
+};
+
+// Функция для определения цвета по редкости
+const getRarityColor = (rarityName: string) => {
+  switch (rarityName.toLowerCase()) {
+    case "common":
+      return "bg-gradient-to-r from-[#b0b0b0] to-[#5a5a5a]";
+    case "uncommon":
+      return "bg-gradient-to-r from-[#6bd1ff] to-[#247aa5]"; // голубой, как в игре
+    case "rare":
+      return "bg-gradient-to-r from-[#3f74ff] to-[#0d1d66]"; // синий, ближе к глубокому индиго
+    case "epic":
+      return "bg-gradient-to-r from-[#a649ff] to-[#4e1a99]"; // фиолетовый, насыщенный
+    case "legendary":
+      return "bg-gradient-to-r from-[#ff4c91] to-[#94164d]"; // розово-красный, ближе к цвету легендарки
+    case "arcane":
+      return "bg-gradient-to-r from-[#ff3434] to-[#7a0000]"; // ярко-красный с тёмным переходом
+    case "nameless":
+      return "bg-gradient-to-b from-yellow-600 to-amber-800";
+    default:
+      return "bg-transparent";
+  }
+};
+
 const Header: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const location = useLocation();
   const { currentUser, logout } = useAuth();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -241,6 +294,19 @@ const Header: React.FC = () => {
     return () => document.removeEventListener('click', handleClickOutside);
   }, []);
 
+  // Функция для открытия фильтров
+  const handleFilterClick = () => {
+    // Если мы уже на странице фильтров, просто открываем модальное окно
+    if (location.pathname === '/filter') {
+      // Здесь нужно будет добавить глобальное состояние или контекст
+      // для управления модальным окном фильтров
+      // Пока просто навигируем
+      return;
+    }
+    // Если мы на другой странице, переходим на страницу фильтров
+    navigate('/filter');
+  };
+
   return (
     <header className="bg-csm-bg-card border-b border-csm-border">
       {/* Top navigation bar */}
@@ -268,7 +334,7 @@ const Header: React.FC = () => {
             </div>
 
             <div className="flex items-center space-x-3">
-              {/* Desktop Search - обновленный дизайн с индикатором загрузки */}
+              {/* Desktop Search - обновляем с добавлением кнопки фильтров */}
               <div className="hidden md:block">
                 <div className="relative search-container">
                   <input
@@ -276,19 +342,34 @@ const Header: React.FC = () => {
                     value={searchQuery}
                     onChange={handleSearchChange}
                     placeholder={t('header.search')}
-                    className="bg-[#0a0c0e] text-white py-2 pl-10 pr-12 rounded border border-[#2e3038] w-64 focus:outline-none focus:border-csm-blue-accent transition-colors"
+                    className="bg-csm-bg-card text-white py-2 pl-10 pr-24 rounded border border-[#2e3038] w-64 focus:outline focus:text-white  hover:border-[#4e84ff] transition-colors"
                   />
                   <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#8a92a1]">
                     <SearchIcon />
                   </div>
-                  {isLoading && (
-                    <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-                      <svg className="animate-spin h-5 w-5 text-csm-blue-accent" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                      </svg>
-                    </div>
-                  )}
+                  
+                  {/* Добавляем разделитель и кнопку фильтров */}
+                  <div className="absolute right-0 top-0 h-full flex items-center">
+                    {isLoading ? (
+                      <div className="px-3">
+                        <svg className="animate-spin h-5 w-5 text-csm-blue-accent" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                      </div>
+                    ) : (
+                      <>
+                        <div className="w-px h-5 bg-[#2e3038] mx-2"></div>
+                        <button
+                          onClick={handleFilterClick}
+                          className="p-2 text-[#8a92a1] hover:text-white transition-colors"
+                          title="Open filters"
+                        >
+                          <FilterIcon />
+                        </button>
+                      </>
+                    )}
+                  </div>
 
                   {/* Выпадающий список результатов */}
                   {showResults && searchResults.length > 0 && (
@@ -297,12 +378,22 @@ const Header: React.FC = () => {
                         <button
                           key={result.id}
                           onClick={() => handleResultClick(result.slug)}
-                          className="w-full flex items-center space-x-3 p-3 hover:bg-csm-bg-darker transition-colors"
+                          className="w-full flex items-center space-x-3 p-3 rounded border border-[#2e3038] hover:border-csm-blue-accent transition-colors"
                         >
-                          <img src={API_URL + result.photo} alt={result.name} className="h-10 object-cover rounded" />
-                          <div className="flex flex-col items-start">
-                            <span className="text-white text-sm text-left">{result.name}</span>
-                            <span className="text-csm-text-secondary text-xs">{result.rarity.name}</span>
+                          <div className="relative h-12">
+                            <img src={API_URL + result.photo} alt={result.name} className="h-12 rounded" />
+                            <div className={`absolute top-0 right-0 w-3 h-3 rounded-bl-[1.5rem] ${getRarityColor(result.rarity.name)}`}></div>
+                            {getItemIcons(result.category?.name).length > 0 && (
+                              <div className="absolute left-1 bottom-1 flex items-center space-x-1">
+                                {getItemIcons(result.category?.name).map((icon, index) => (
+                                  <img key={index} src={icon} alt="Item property" className="w-3 h-3 object-contain" />
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                          <div className="flex flex-col items-start flex-1 min-w-0">
+                            <span className="text-white text-left truncate w-full">{result.name}</span>
+                            <span className="text-csm-text-muted text-xs">{result.rarity.name}</span>
                           </div>
                         </button>
                       ))}
@@ -356,7 +447,7 @@ const Header: React.FC = () => {
               ) : (
                 <button
                   onClick={handleLogin}
-                  className="hidden md:block bg-csm-blue-accent hover:bg-csm-blue-hover text-white py-2 px-4 rounded-md transition-colors"
+                  className="hidden md:block bg-indigo-700 hover:bg-indigo-900 text-white py-2 px-4 rounded transition-colors"
                 >
                   {t('header.login')}
                 </button>
@@ -388,12 +479,11 @@ const Header: React.FC = () => {
         <div className="container mx-auto px-4">
           <div className="flex items-center space-x-6 text-sm">
             {/* "Item types" as a simple text link with green color */}
-            <a
-              href="/item-types"
-              className="py-2 text-green-400 hover:text-csm-blue-accent transition-colors"
+            <h1
+              className="py-2 text-[#4e84ff]"
             >
-              Item types
-            </a>
+              ITEM TYPES
+            </h1>
 
             {/* Categories */}
             {categories.map((category) => (
@@ -449,7 +539,7 @@ const Header: React.FC = () => {
             {/* Mobile categories with icons */}
             <Link to="/" className="flex items-center space-x-2 navbar-link">
               <ItemsIcon />
-              <span>{t('header.mobile.items')}</span>
+              <span>{t('header.mobile.main')}</span>
             </Link>
             <Link to="/news" className="flex items-center space-x-2 navbar-link">
               <NewsIcon />
@@ -462,19 +552,17 @@ const Header: React.FC = () => {
 
             {/* Mobile Categories */}
             <div className="pt-2 border-t border-csm-border">
-              <p className="text-csm-text-secondary text-xs mb-3">Categories</p>
 
               {/* "Item types" as simple link */}
-              <a
-                href="/item-types"
-                className="block py-2 text-green-400 hover:text-csm-blue-accent"
+              <h1
+                className="block py-2 text-[#4e84ff]"
               >
-                Item types
-              </a>
+                ITEM TYPES
+              </h1>
 
               {/* Categories */}
               {categories.map((category) => (
-                <div key={category.id} className="mb-2">
+                <div key={category.id} className="mb-2 ml-2">
                   {category.isLink && category.path ? (
                     <Link
                       to={category.path}
@@ -549,7 +637,7 @@ const Header: React.FC = () => {
             ) : (
               <button
                 onClick={handleLogin}
-                className="bg-csm-blue-accent text-white py-2 px-4 rounded-md flex justify-center items-center mt-4"
+                className="bg-indigo-700 hover:bg-indigo-900 text-white py-2 px-4 rounded flex justify-center items-center mt-4"
               >
                 {t('header.login')}
               </button>
@@ -558,7 +646,7 @@ const Header: React.FC = () => {
         </div>
       )}
 
-      {/* Mobile Search Modal - обновленный */}
+      {/* Mobile Search Modal - обновляем с добавлением кнопки фильтров */}
       {isSearchOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-70 z-50 flex flex-col p-4">
           <div className="relative bg-csm-bg-card rounded-xl p-4 w-full max-w-lg mx-auto mt-16">
@@ -578,49 +666,74 @@ const Header: React.FC = () => {
                 value={searchQuery}
                 onChange={handleSearchChange}
                 placeholder={t('header.search_items')}
-                className="bg-[#0a0c0e] text-white py-3 pl-10 pr-12 rounded border border-[#2e3038] w-full focus:outline-none focus:border-csm-blue-accent transition-colors"
+                className="bg-csm-bg-card text-white py-3 pl-10 pr-24 rounded border border-[#2e3038] w-full focus:outline-none focus:text-white hover:border-[#4e84ff] transition-colors"
                 autoFocus
               />
               <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#8a92a1]">
                 <SearchIcon />
               </div>
-              {isLoading && (
-                <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-                  <svg className="animate-spin h-5 w-5 text-csm-blue-accent" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                </div>
-              )}
 
-              {/* Выпадающий список результатов для мобильной версии */}
-              {showResults && searchResults.length > 0 && (
-                <div className="absolute top-full left-0 right-0 mt-2 bg-csm-bg-card border border-csm-border rounded-md shadow-lg overflow-hidden">
-                  {searchResults.map((result) => (
+              {/* Добавляем разделитель и кнопку фильтров */}
+              <div className="absolute right-0 top-0 h-full flex items-center">
+                {isLoading ? (
+                  <div className="px-3">
+                    <svg className="animate-spin h-5 w-5 text-csm-blue-accent" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                  </div>
+                ) : (
+                  <>
+                    <div className="w-px h-5 bg-[#2e3038] mx-2"></div>
                     <button
-                      key={result.id}
-                      onClick={() => handleResultClick(result.slug)}
-                      className="w-full flex items-center space-x-3 p-3 hover:bg-csm-bg-darker transition-colors"
+                      onClick={handleFilterClick}
+                      className="p-2 text-[#8a92a1] hover:text-white transition-colors"
+                      title="Open filters"
                     >
-                      <img src={API_URL + result.photo} alt={result.name} className="h-10 object-cover rounded" />
-                      <div className="flex flex-col items-start">
-                        <span className="text-white text-sm text-left">{result.name}</span>
-                        <span className="text-csm-text-secondary text-xs">{result.rarity.name}</span>
-                      </div>
+                      <FilterIcon />
                     </button>
-                  ))}
-                </div>
-              )}
+                  </>
+                )}
+              </div>
             </div>
+
+            {/* Результаты поиска для мобильной версии */}
+            {showResults && searchResults.length > 0 && (
+              <div className="mt-4 space-y-2">
+                {searchResults.map((result) => (
+                  <button
+                    key={result.id}
+                    onClick={() => handleResultClick(result.slug)}
+                    className="w-full flex items-center space-x-3 p-3 rounded border border-[#2e3038] hover:border-csm-blue-accent transition-colors"
+                  >
+                    <div className="relative h-12">
+                      <img src={API_URL + result.photo} alt={result.name} className="h-12 rounded" />
+                      <div className={`absolute top-0 right-0 w-3 h-3 rounded-bl-[1.5rem] ${getRarityColor(result.rarity.name)}`}></div>
+                      {getItemIcons(result.category?.name).length > 0 && (
+                        <div className="absolute left-1 bottom-1 flex items-center space-x-1">
+                          {getItemIcons(result.category?.name).map((icon, index) => (
+                            <img key={index} src={icon} alt="Item property" className="w-3 h-3 object-contain" />
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex flex-col items-start flex-1 min-w-0">
+                      <span className="text-white text-left truncate w-full">{result.name}</span>
+                      <span className="text-csm-text-muted text-xs">{result.rarity.name}</span>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            )}
 
             <div className="mt-4">
               <p className="text-csm-text-secondary text-sm">{t('header.popular_searches')}</p>
               <div className="flex flex-wrap gap-2 mt-2">
-                <button className="bg-[#0a0c0e] border border-[#2e3038] rounded px-3 py-1 text-sm text-[#8a92a1] hover:text-white hover:border-[#4e84ff] transition-colors">AK-47</button>
-                <button className="bg-[#0a0c0e] border border-[#2e3038] rounded px-3 py-1 text-sm text-[#8a92a1] hover:text-white hover:border-[#4e84ff] transition-colors">AWP</button>
-                <button className="bg-[#0a0c0e] border border-[#2e3038] rounded px-3 py-1 text-sm text-[#8a92a1] hover:text-white hover:border-[#4e84ff] transition-colors">USP-S</button>
-                <button className="bg-[#0a0c0e] border border-[#2e3038] rounded px-3 py-1 text-sm text-[#8a92a1] hover:text-white hover:border-[#4e84ff] transition-colors">Knife</button>
-                <button className="bg-[#0a0c0e] border border-[#2e3038] rounded px-3 py-1 text-sm text-[#8a92a1] hover:text-white hover:border-[#4e84ff] transition-colors">Gloves</button>
+                <button className="bg-csm-bg-card border border-[#2e3038] rounded px-3 py-1 text-sm text-[#8a92a1] hover:text-white hover:border-[#4e84ff] transition-colors">AKR</button>
+                <button className="bg-csm-bg-card border border-[#2e3038] rounded px-3 py-1 text-sm text-[#8a92a1] hover:text-white hover:border-[#4e84ff] transition-colors">AWM</button>
+                <button className="bg-csm-bg-card border border-[#2e3038] rounded px-3 py-1 text-sm text-[#8a92a1] hover:text-white hover:border-[#4e84ff] transition-colors">USP</button>
+                <button className="bg-csm-bg-card border border-[#2e3038] rounded px-3 py-1 text-sm text-[#8a92a1] hover:text-white hover:border-[#4e84ff] transition-colors">Karambit</button>
+                <button className="bg-csm-bg-card border border-[#2e3038] rounded px-3 py-1 text-sm text-[#8a92a1] hover:text-white hover:border-[#4e84ff] transition-colors">Gloves</button>
               </div>
             </div>
           </div>

@@ -39,8 +39,6 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-
-
 .card {
   background-color: var(--color-csm-bg-card);
   border-radius: 0.75rem;
@@ -194,4 +192,22 @@ img {
   background: linear-gradient(to bottom, var(--color-csm-bg-lighter), transparent);
   border-radius: 0.75rem;
   padding: 1rem;
+}
+
+/* Кастомный скроллбар */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: theme('colors.csm.bg.dark');
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: theme('colors.csm.border');
+  border-radius: 3px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: theme('colors.csm.blue.accent');
 }

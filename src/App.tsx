@@ -9,6 +9,7 @@ import { I18nextProvider } from 'react-i18next';
 import { AuthProvider } from './contexts/AuthContext';
 import i18n from './i18n/i18n';
 import './index.css';
+import FilterPage from './pages/Filter';
 
 function App() {
   return (
@@ -19,8 +20,7 @@ function App() {
             <Route path="/" element={<MainPage />} />
             <Route path="/item/:slug" element={<ItemDetailsPage />} />
             <Route path="/profile" element={<ProfilePage />} />
-            <Route path="/categories/:categoryId" element={<CategoryPage />} />
-            <Route path="/categories/:categoryId/:subcategoryId" element={<SubcategoryPage />} />
+            <Route path="/filter" element={<FilterPage />} />
           </Routes>
         </Router>
       </AuthProvider>

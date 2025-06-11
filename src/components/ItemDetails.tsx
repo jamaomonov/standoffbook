@@ -7,6 +7,9 @@ import PriceHistoryChart from './PriceHistoryChart';
 import { getItemDetails, type ItemDetails } from '../api/item';
 import { API_URL } from '../api/config';
 import uspInGameView from '../assets/usp-ingame-view.webp';
+import gradientIcon from '../assets/icons/gradient.png';
+import stattrackIcon from '../assets/icons/stattrack.png';
+import patternIcon from '../assets/icons/pattern.png';
 
 const StarIcon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 inline fill-yellow-400" viewBox="0 0 20 20">
@@ -27,18 +30,68 @@ const ArrowDownIcon = () => (
 );
 
 const PriceChange: React.FC<{ value: number | undefined; percentage: number | undefined }> = ({ value, percentage }) => {
-  if (value === undefined || percentage === undefined) return null;
+  if (value === undefined || value === null || percentage === undefined || percentage === null) {
+    return <div className="text-csm-text-muted">—</div>;
+  }
   
   const isPositive = value >= 0;
-  const colorClass = isPositive ? 'text-green-500' : 'text-red-500';
+  const colorClass = isPositive ? 'text-green-400' : 'text-red-400';
   const Icon = isPositive ? ArrowUpIcon : ArrowDownIcon;
   const prefix = isPositive ? '+' : '';
 
   return (
     <div className={colorClass}>
-      <Icon /> {prefix}{value} G ({prefix}{percentage}%)
+      <div className="text-sm lg:text-base">
+        <Icon /> {value >= 0 ? '+' : ''}{percentage.toFixed(2)}%
+      </div>
+      <div className="text-xs text-csm-text-muted">
+        ({value >= 0 ? '+' : ''}{value.toFixed(2)} G)
+      </div>
     </div>
   );
+};
+
+// Добавляем вспомогательную функцию для определения иконок
+const getItemIcons = (categoryName: string | undefined) => {
+  if (!categoryName) return [];
+  
+  switch (categoryName) {
+    case 'StatTrack':
+      return [stattrackIcon];
+    case 'Pattern':
+      return [patternIcon];
+    case 'Gradient':
+      return [gradientIcon];
+    case 'Pattern and StatTrack':
+      return [patternIcon, stattrackIcon];
+    case 'Gradient and StatTrack':
+      return [gradientIcon, stattrackIcon];
+    case 'Regular':
+    default:
+      return [];
+  }
+};
+
+// Функция для определения цвета по редкости
+const getRarityColor = (rarityName: string) => {
+  switch (rarityName.toLowerCase()) {
+    case "common":
+      return "bg-gradient-to-r from-[#b0b0b0] to-[#5a5a5a]";
+    case "uncommon":
+      return "bg-gradient-to-r from-[#6bd1ff] to-[#247aa5]"; // голубой, как в игре
+    case "rare":
+      return "bg-gradient-to-r from-[#3f74ff] to-[#0d1d66]"; // синий, ближе к глубокому индиго
+    case "epic":
+      return "bg-gradient-to-r from-[#a649ff] to-[#4e1a99]"; // фиолетовый, насыщенный
+    case "legendary":
+      return "bg-gradient-to-r from-[#ff4c91] to-[#94164d]"; // розово-красный, ближе к цвету легендарки
+    case "arcane":
+      return "bg-gradient-to-r from-[#ff3434] to-[#7a0000]"; // ярко-красный с тёмным переходом
+    case "nameless":
+      return "bg-gradient-to-b from-yellow-600 to-amber-800";
+    default:
+      return "bg-transparent";
+  }
 };
 
 const ItemDetails: React.FC = () => {
@@ -160,12 +213,22 @@ const ItemDetails: React.FC = () => {
         {/* Item Header */}
         <div className="flex flex-col md:flex-row gap-6 md:gap-8 mb-6 md:mb-8">
           {/* Item Image */}
-          <div className="w-full md:w-1/2 lg:w-2/5 flex items-center justify-center item-image-container">
-            <img
-              src={API_URL + itemDetails.photo}
-              alt={itemDetails.name}
-              className="max-w-full h-auto max-h-52 md:max-h-64"
-            />
+          <div className="w-full md:w-1/2 lg:w-2/5 flex items-center justify-center rounded-xl p-6">
+            <div className="relative">
+              <img
+                src={API_URL + itemDetails.photo}
+                alt={itemDetails.name}
+                className="max-w-full h-auto max-h-52 md:max-h-64 rounded-xl"
+              />
+              <div className={`absolute top-0 right-0 w-11 md:w-15 h-11 md:h-15 rounded-bl-[3rem] ${getRarityColor(itemDetails.rarity.name)}`}></div>
+              {getItemIcons(itemDetails.category?.name).length > 0 && (
+                <div className="absolute left-4 bottom-3 flex items-center space-x-1">
+                  {getItemIcons(itemDetails.category?.name).map((icon, index) => (
+                    <img key={index} src={icon} alt="Item property" className="w-7 h-7 object-contain" />
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Item Info */}
@@ -173,21 +236,8 @@ const ItemDetails: React.FC = () => {
             <div className="bg-csm-bg-card rounded-xl p-4 md:p-6 h-full">
               <div className="flex flex-col h-full">
                 <div className="mb-4">
-                  {itemDetails.category && (
-                  <span className="inline-block px-3 py-1 bg-csm-blue-primary text-white text-xs rounded-full mb-2 mr-2">
-                    {itemDetails.category?.name}
-                  </span>
-                  )}
-                  <span className="inline-block px-3 py-1 bg-csm-blue-primary text-white text-xs rounded-full mb-2 mr-2">
-                    {itemDetails?.rarity.name}
-                  </span>
-                  <span className="inline-block px-3 py-1 bg-csm-blue-primary text-white text-xs rounded-full mb-2 mr-2">
-                    {itemDetails?.type.name}
-                  </span>
-                  <span className="inline-block px-3 py-1 bg-csm-blue-primary text-white text-xs rounded-full mb-2 mr-2">
-                    {itemDetails.collection.name}
-                  </span>
-                  <h1 className="text-xl md:text-2xl lg:text-3xl font-bold text-white mt-3">{itemDetails.name}</h1>
+                  <h1 className="text-xl md:text-2xl lg:text-3xl text-white mt-3">{itemDetails.name}</h1>
+                  <h6 className="text-csm-text-muted mt-1">{itemDetails.collection.name}</h6>
                 </div>
 
                 <div className="grid grid-cols-2 gap-5 md:gap-5 mb-4">
@@ -257,13 +307,42 @@ const ItemDetails: React.FC = () => {
         <div className="mb-6 md:mb-8">
           <h2 className="text-lg md:text-xl font-bold text-white mb-3 md:mb-4">{t('priceHistory.title')}</h2>
           <div className="bg-csm-bg-card rounded-xl p-4 md:p-6">
-            <PriceHistoryChart height={400} itemName={itemDetails.name} />
+            <PriceHistoryChart height={400} item_id={itemDetails.id} item_name={itemDetails.name} />
           </div>
         </div>
 
+        <h6 className="text-csm-text-muted text-xs text-center mt-4 md:text-sm">Данные исключительно берутся из <a href="https://standoff-2.com/" target="_blank" className="text-indigo-700">standoff-2.com</a></h6>
+
+        {selectedImage && (
+        <div
+          className="fullscreen-modal"
+          onClick={closeFullscreen}
+        >
+          <div className="relative max-w-7xl max-h-screen">
+            <button
+              className="modal-close-btn"
+              onClick={(e) => {
+                e.stopPropagation(); // Prevent event bubbling
+                closeFullscreen();
+              }}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+            <img
+              src={selectedImage.src}
+              alt={selectedImage.alt}
+              className="fullscreen-image"
+              onClick={(e) => e.stopPropagation()} // Prevent closing when clicking on the image itself
+            />
+          </div>
+        </div>
+      )}
+
         {/* Characteristics */}
         {itemDetails.weapon && (
-          <div className="mb-6 md:mb-8">
+          <div className="mb-6 md:mb-8 mt-5">
             <h2 className="text-lg md:text-xl font-bold text-white mb-3 md:mb-4">{t('characteristics.title')}</h2>
             <div className="bg-csm-bg-card rounded-xl p-4 md:p-6">
               {/* Team */}
@@ -342,7 +421,7 @@ const ItemDetails: React.FC = () => {
         )}
 
         {/* Similar Skins */}
-        <div className="mb-6 md:mb-8">
+        {/* <div className="mb-6 md:mb-8">
           <h2 className="text-lg md:text-xl font-bold text-white mb-3 md:mb-4">{t('similarSkins.title')}</h2>
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 md:gap-4">
             {Array(6).fill(0).map((_, i) => (
@@ -364,10 +443,10 @@ const ItemDetails: React.FC = () => {
           <div className="flex justify-center mt-4">
             <button className="btn-secondary rounded-lg">{t('similarSkins.show_all')}</button>
           </div>
-        </div>
+        </div> */}
 
         {/* Description */}
-        <div className="mb-6 md:mb-8">
+        {/* <div className="mb-6 md:mb-8">
           <h2 className="text-lg md:text-xl font-bold text-white mb-3 md:mb-4">{t('description.title')}</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8">
             <div className="card rounded-xl">
@@ -417,37 +496,12 @@ const ItemDetails: React.FC = () => {
                 {t('description.popularity.content')}
               </p>
             </div>
-          </div>
-        </div>
+          </div> */}
+        {/* </div> */}
       </div>
 
       {/* Fullscreen Image Modal */}
-      {selectedImage && (
-        <div
-          className="fullscreen-modal"
-          onClick={closeFullscreen}
-        >
-          <div className="relative max-w-7xl max-h-screen">
-            <button
-              className="modal-close-btn"
-              onClick={(e) => {
-                e.stopPropagation(); // Prevent event bubbling
-                closeFullscreen();
-              }}
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-            <img
-              src={selectedImage.src}
-              alt={selectedImage.alt}
-              className="fullscreen-image"
-              onClick={(e) => e.stopPropagation()} // Prevent closing when clicking on the image itself
-            />
-          </div>
-        </div>
-      )}
+      
     </div>
   );
 };

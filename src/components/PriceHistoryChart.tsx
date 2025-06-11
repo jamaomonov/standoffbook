@@ -5,7 +5,8 @@ import { fetchItemPriceHistory } from '../api/prices';
 interface PriceHistoryChartProps {
   data?: Array<{ date: string; price: number }>;
   height?: number;
-  itemName?: string;
+  item_id?: number;
+  item_name?: string;
 }
 
 type PeriodType = '7d' | '1m' | '3m' | '6m' | '1y' | 'all';
@@ -13,7 +14,8 @@ type PeriodType = '7d' | '1m' | '3m' | '6m' | '1y' | 'all';
 const PriceHistoryChart: React.FC<PriceHistoryChartProps> = ({ 
   data = [], 
   height = 400,
-  itemName = ''
+  item_id = 0,
+  item_name = ''
 }) => {
   const chartRef = useRef<HTMLDivElement>(null);
   const chartInstance = useRef<echarts.ECharts | null>(null);
@@ -50,7 +52,7 @@ const PriceHistoryChart: React.FC<PriceHistoryChartProps> = ({
     setIsLoading(true);
     setError(null);
     try {
-      const apiData = await fetchItemPriceHistory(itemName);
+      const apiData = await fetchItemPriceHistory(item_id);
       // Сортируем данные по дате
       const sortedData = apiData.sort((a, b) => 
         new Date(a.date).getTime() - new Date(b.date).getTime()
@@ -78,8 +80,8 @@ const PriceHistoryChart: React.FC<PriceHistoryChartProps> = ({
     });
 
     const shareData = {
-      title: `График ${itemName} - standoffbook.com`,
-      text: `Посмотрите историю цен для ${itemName} на standoffbook.com`,
+      title: `График ${item_name} - standoffbook.com`,
+      text: `Посмотрите историю цен для ${item_name} на standoffbook.com`,
       url: window.location.href
     };
 
@@ -103,7 +105,7 @@ const PriceHistoryChart: React.FC<PriceHistoryChartProps> = ({
     });
 
     const link = document.createElement('a');
-    link.download = `${itemName}-price-history-standoffbook.png`;
+    link.download = `${item_name}-price-history-standoffbook.png`;
     link.href = dataUrl;
     document.body.appendChild(link);
     link.click();
@@ -112,7 +114,7 @@ const PriceHistoryChart: React.FC<PriceHistoryChartProps> = ({
 
   useEffect(() => {
     fetchPriceHistory();
-  }, [itemName]);
+  }, [item_id]);
 
   useEffect(() => {
     const handleResize = () => {
@@ -160,15 +162,13 @@ const PriceHistoryChart: React.FC<PriceHistoryChartProps> = ({
         }
       },
       toolbox: {
-        show: !isMobile,
+        show: true,
         feature: {
-          dataZoom: {
-            yAxisIndex: 'none',
-            icon: {
-              zoom: 'path://M0,0 L1,1',
-              back: 'path://M0,0 L1,1'
+          ...(isMobile ? {} : {
+            dataZoom: {
+              yAxisIndex: 'none'
             }
-          },
+          }),
           restore: {},
           saveAsImage: { show: false }
         },
@@ -180,61 +180,19 @@ const PriceHistoryChart: React.FC<PriceHistoryChartProps> = ({
         {
           type: 'inside',
           start: 0,
-          end: 100,
-          zoomLock: false,
-          throttle: 50,
-          minValueSpan: 3600 * 24 * 1000 * 3,
-          rangeMode: ['value', 'value'],
-          preventDefaultMouseMove: false,
-          moveOnMouseMove: true,
-          zoomOnMouseWheel: true,
-          moveOnMouseWheel: false,
-          orient: 'horizontal',
-          filterMode: 'filter'
+          end: 100
         },
         {
-          show: true,
           type: 'slider',
-          start: 0,
-          end: 100,
-          height: isMobile ? 25 : 20,
-          bottom: 0,
-          brushSelect: false,
-          handleSize: isMobile ? 25 : 20,
-          handleStyle: {
-            color: '#60a5fa',
-            borderColor: '#60a5fa',
-            borderWidth: 1,
-            shadowBlur: 2,
-            shadowColor: 'rgba(0,0,0,0.2)',
-            shadowOffsetX: 0,
-            shadowOffsetY: 0
-          },
-          moveHandleSize: isMobile ? 25 : 20,
-          moveHandleStyle: {
-            color: '#60a5fa',
-            opacity: 0.7
-          },
-          emphasis: {
-            handleStyle: {
-              borderWidth: 2,
-              color: '#3b82f6'
-            }
-          },
-          backgroundColor: 'rgba(26,29,36,0.3)',
-          fillerColor: 'rgba(96,165,250,0.1)',
-          borderColor: 'transparent',
-          textStyle: {
-            color: '#9ca3af',
-            fontSize: isMobile ? 10 : 11
-          }
+          bottom: 10, // отступ от нижней границы (уменьшай, чтобы опустить ниже)
+          height: 30, // по желанию: настрой высоту слайдера
         }
       ],
       grid: {
-        left: isMobile ? '8%' : '3%',
-        right: isMobile ? '5%' : '4%',
-        bottom: isMobile ? '40px' : '40px',
-        top: isMobile ? '15%' : '10%',
+        left: isMobile ? '0%' : '0%',
+        right: isMobile ? '1%' : '1%',
+        bottom: isMobile ? '10%' : '10%',
+        top: isMobile ? '9%' : '9%',
         containLabel: true
       },
       xAxis: {
@@ -250,10 +208,6 @@ const PriceHistoryChart: React.FC<PriceHistoryChartProps> = ({
             color: '#9ca3af',
             fontSize: isMobile ? 10 : 11
           },
-          formatter: function (value: any) {
-            const date = new Date(value);
-            return `${date.getMonth() + 1}/${date.getDate()}`;
-          }
         },
         splitLine: {
           show: false
@@ -277,7 +231,7 @@ const PriceHistoryChart: React.FC<PriceHistoryChartProps> = ({
         splitLine: {
           lineStyle: {
             color: '#374151',
-            type: 'dashed'
+            type: ''
           }
         }
       },
@@ -360,18 +314,18 @@ const PriceHistoryChart: React.FC<PriceHistoryChartProps> = ({
       <div className="flex justify-end space-x-2 mb-4">
         <button
           onClick={handleScreenshot}
-          className="px-2 py-2 md:px-3 md:py-1 bg-gray-700 hover:bg-gray-600 text-white rounded-md text-xs md:text-sm flex items-center"
+          className="px-2 py-2 md:px-3 md:py-1 text-[#60a5fa] rounded text-xs md:text-sm flex items-center border border-[#60a5fa] hover:bg-[#60a5fa]/10"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 md:h-4 md:w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-3 md:h-4 md:w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
           </svg>
           <span className="hidden md:inline">Скриншот</span>
         </button>
         <button
           onClick={handleShare}
-          className="px-2 py-2 md:px-3 md:py-1 bg-gray-700 hover:bg-gray-600 text-white rounded-md text-xs md:text-sm flex items-center"
+          className="px-2 py-2 md:px-3 md:py-1 text-[#60a5fa] rounded text-xs md:text-sm flex items-center border border-[#60a5fa] hover:bg-[#60a5fa]/10"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 md:h-4 md:w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-3 md:h-4 md:w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
           </svg>
           <span className="hidden md:inline">Поделиться</span>
@@ -397,7 +351,7 @@ const PriceHistoryChart: React.FC<PriceHistoryChartProps> = ({
               className={`px-3 py-2 text-xs font-medium rounded transition-colors ${
                 selectedPeriod === period.value
                   ? 'bg-indigo-700 text-white'
-                  : 'bg-[#1a1d24] text-gray-300 hover:bg-[#1a1d24]/80'
+                  : 'bg-indigo-900 text-gray-300 hover:bg-indigo-700 text-white'
               }`}
             >
               {period.label}
@@ -412,7 +366,7 @@ const PriceHistoryChart: React.FC<PriceHistoryChartProps> = ({
               className={`px-3 py-2 text-xs font-medium rounded transition-colors ${
                 selectedPeriod === period.value
                   ? 'bg-indigo-700 text-white'
-                  : 'bg-[#1a1d24] text-gray-300 hover:bg-[#1a1d24]/80'
+                  : 'bg-indigo-900 text-gray-300 hover:bg-indigo-700 text-white'
               }`}
             >
               {period.label}

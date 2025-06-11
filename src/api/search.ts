@@ -5,11 +5,17 @@ export interface Rarity {
   name: string;
 }
 
+export interface Category {
+  id: number;
+  name: string;
+}
+
 export interface SearchResult {
   id: number;
   name: string;
   photo: string;
   rarity: Rarity;
+  category: Category;
   slug: string;
 }
 
